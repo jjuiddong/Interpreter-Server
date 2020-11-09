@@ -3,6 +3,8 @@
 visual program interpreter server with VS2017 C++
 - generate intermediate code
 - webserver connection
+	- using websocket
 	- recv visual program
 	- send intermediate code
-	- synchronize debugging information
+	- debugger
+		- synchronize debugging information
