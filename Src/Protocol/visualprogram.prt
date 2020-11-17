@@ -1,0 +1,35 @@
+//
+// visual programming web server communication protocol
+// json string format
+//
+
+// web browser -> webserver
+//	- ReqRun(nodeFileName)
+
+// webserver -> web browser
+//	- AckRun(nodeFileName)
+
+
+// webserver -> interpreter server
+protocol w2s 1000 json
+{
+	{packetid : 2000}
+	RecvVisProgData(double lon, double lat, double altitude, double speed, string descript);
+
+	{packetid : 2001} 
+	AckLogin(string id, int result);
+
+	{packetid : 2010} 
+	ReqRun(sNodeFile nodeFile);
+}
+
+
+// interpreter server -> webserver
+protocol s2w 2000 json
+{
+	ReqLogin(string header, string id);
+	ReqVisProgData(string header);
+
+	{packetid : 2011} 
+	AckRun(int result);
+}
