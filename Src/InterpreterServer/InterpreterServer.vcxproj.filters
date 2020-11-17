@@ -24,6 +24,7 @@
       <Filter>Protocol_Src</Filter>
     </ClInclude>
     <ClInclude Include="marshalling_node.h" />
+    <ClInclude Include="webvprog.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Protocol">

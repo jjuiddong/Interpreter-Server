@@ -31,7 +31,7 @@ using namespace marshalling_json;
 	struct ReqRun_Packet {
 		cProtocolDispatcher *pdispatcher;
 		netid senderId;
-		sNodeFile nodeFile;
+		webvprog::sNodeFile nodeFile;
 	};
 
 

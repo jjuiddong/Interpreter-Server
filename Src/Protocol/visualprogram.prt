@@ -20,7 +20,7 @@ protocol w2s 1000 json
 	AckLogin(string id, int result);
 
 	{packetid : 2010} 
-	ReqRun(sNodeFile nodeFile);
+	ReqRun(webvprog::sNodeFile nodeFile);
 }
 
 

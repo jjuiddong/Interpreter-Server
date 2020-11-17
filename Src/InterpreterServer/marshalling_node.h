@@ -5,117 +5,66 @@
 #pragma once
 
 
-enum class eSymbolType {
-	None, Bool, Int, Float, Enum, String
-};
-
-
-struct sSymbol {
-	eSymbolType stype;
-	string name;
-	_variant_t val;
-	vector<string> values;
-};
-
-struct sWidget {
-	int id;
-	Str32 name;
-};
-
-struct sSlot {
-	int id;
-	string name;
-	BYTE kind;
-	BYTE type;
-};
-
-struct sLink {
-	int id;
-	int from;
-	int to;
-};
-
-struct sNode {
-	int id;
-	BYTE nodeType;
-	string name;
-	vector<sSlot> inputs;
-	vector<sSlot> outputs;
-	vector<sWidget> widgets;
-};
-
-struct sNodeFile {
-	string version;
-	string title;
-	int offsetX;
-	int offsetY;
-	float scale;
-	vector<sNode> nodes;
-	vector<sLink> links;
-	vector<sSymbol> symbolTable;
-};
-
-
 // json marshalling
 namespace network2 {
 	namespace marshalling_json
 	{
-
-		inline ptree& get(ptree &props, OUT sSymbol &rhs) {
-			rhs.stype = (eSymbolType)props.get<BYTE>("stype", 0);
+		inline ptree& get(ptree &props, OUT webvprog::sSymbol &rhs) {
+			rhs.stype = (vprog::eSymbolType::Enum)props.get<BYTE>("stype", 0);
 			rhs.name = props.get<string>("name", "name");
 			return props;
 		}
 
-		inline ptree& get(ptree &props, OUT sLink &rhs) {
+		inline ptree& get(ptree &props, OUT webvprog::sLink &rhs) {
 			rhs.id = props.get<int>("id", 0);
 			rhs.from = props.get<int>("from", 0);
 			rhs.to = props.get<int>("to", 0);
 			return props;
 		}
 
-		inline ptree& get(ptree &props, OUT sWidget &rhs) {
+		inline ptree& get(ptree &props, OUT webvprog::sWidget &rhs) {
 			rhs.id = props.get<int>("id", 0);
 			rhs.name = props.get<string>("name", "name");
 			return props;
 		}
 
-		inline ptree& get(ptree &props, OUT sSlot &rhs) {
+		inline ptree& get(ptree &props, OUT webvprog::sSlot &rhs) {
 			rhs.id = props.get<int>("id", 0);
 			rhs.name = props.get<string>("name", "name");
-			rhs.kind = props.get<int>("kind", 0);
-			rhs.type = props.get<int>("type", 0);
+			rhs.kind = (vprog::ePinKind::Enum)props.get<int>("kind", 0);
+			rhs.type = (vprog::ePinType::Enum)props.get<int>("type", 0);
 			return props;
 		}
 
-		inline ptree& get(ptree &props, OUT sNode &rhs) {
+		inline ptree& get(ptree &props, OUT webvprog::sNode &rhs) {
 			ptree &inputs = props.get_child("inputs");
 			for (auto it : inputs) {
-				sSlot slot;
+				webvprog::sSlot slot;
 				get(it.second, slot);
 				rhs.inputs.push_back(slot);
 			}
 			ptree &outputs = props.get_child("outputs");
 			for (auto it : outputs) {
-				sSlot slot;
+				webvprog::sSlot slot;
 				get(it.second, slot);
 				rhs.outputs.push_back(slot);
 			}
 			ptree &widgets = props.get_child("widgets");
 			for (auto it : widgets) {
-				sWidget widget;
+				webvprog::sWidget widget;
 				get(it.second, widget);
 				rhs.widgets.push_back(widget);
 			}
 			return props;
 		}
 
-		inline ptree& put(ptree &props, const char *typeName, const sNodeFile &rhs) {
+		inline ptree& put(ptree &props, const char *typeName, const webvprog::sNodeFile &rhs) {
 			// nothing~
 			return props;
 		}
 
-		inline ptree& get(ptree &props, const char *typeName, OUT sNodeFile &rhs) {
+		inline ptree& get(ptree &props, const char *typeName, OUT webvprog::sNodeFile &rhs) {
+			using namespace webvprog;
 
 			ptree &child = props.get_child(typeName);
 			rhs.version = child.get<string>("version", "v1.0");
@@ -157,40 +106,41 @@ namespace network2 {
 // binary marshalling
 namespace network2 {
 	namespace marshalling {
-		cPacket& operator<<(cPacket& packet, const sNodeFile& rhs);
-		cPacket& operator>>(cPacket& packet, OUT sSymbol& rhs);
-		cPacket& operator>>(cPacket& packet, OUT sLink& rhs);
-		cPacket& operator>>(cPacket& packet, OUT sSlot& rhs);
-		cPacket& operator>>(cPacket& packet, OUT sNode& rhs);
-		cPacket& operator>>(cPacket& packet, OUT sNodeFile& rhs);
+		cPacket& operator<<(cPacket& packet, const webvprog::sNodeFile& rhs);
+		cPacket& operator>>(cPacket& packet, OUT webvprog::sSymbol& rhs);
+		cPacket& operator>>(cPacket& packet, OUT webvprog::sLink& rhs);
+		cPacket& operator>>(cPacket& packet, OUT webvprog::sSlot& rhs);
+		cPacket& operator>>(cPacket& packet, OUT webvprog::sNode& rhs);
+		cPacket& operator>>(cPacket& packet, OUT webvprog::sNodeFile& rhs);
 	}
 
 	//------------------------------------------------------------------------------
 	// implements
-
-	inline cPacket& marshalling::operator<<(cPacket& packet, const sNodeFile& rhs) {
+	inline cPacket& marshalling::operator<<(cPacket& packet, const webvprog::sNodeFile& rhs) {
 		return packet; // nothing~
 	}
 
-	inline cPacket& marshalling::operator>>(cPacket& packet, OUT sSymbol& rhs) {
+	inline cPacket& marshalling::operator>>(cPacket& packet, OUT webvprog::sSymbol& rhs) {
+		using namespace webvprog;
+
 		BYTE stype;
 		packet >> stype;
-		rhs.stype = (eSymbolType)stype;
+		rhs.stype = (vprog::eSymbolType::Enum)stype;
 		packet >> rhs.name;
 		packet.Read4ByteAlign(); // after string parsing
 
 		// parse value
 		switch (rhs.stype) {
-		case eSymbolType::Bool: rhs.val.vt = VT_BOOL; break;
-		case eSymbolType::Int: rhs.val.vt = VT_INT; break;
-		case eSymbolType::Float: rhs.val.vt = VT_R4; break;
-		case eSymbolType::String: rhs.val.vt = VT_BSTR; break;
-		case eSymbolType::Enum:
-		case eSymbolType::None:
+		case vprog::eSymbolType::Bool: rhs.val.vt = VT_BOOL; break;
+		case vprog::eSymbolType::Int: rhs.val.vt = VT_INT; break;
+		case vprog::eSymbolType::Float: rhs.val.vt = VT_R4; break;
+		case vprog::eSymbolType::String: rhs.val.vt = VT_BSTR; break;
+		case vprog::eSymbolType::Enums:
+		case vprog::eSymbolType::None:
 		default: rhs.val.vt = VT_EMPTY; break;
 		}
 
-		if (rhs.stype == eSymbolType::Enum)
+		if (rhs.stype == vprog::eSymbolType::Enums)
 		{
 			MARSHALLING_BIN_GET_SEQ(packet, vector<string>, rhs.values);
 			packet.Read4ByteAlign();
@@ -203,33 +153,56 @@ namespace network2 {
 		return packet;
 	}
 
-	inline cPacket& marshalling::operator>>(cPacket& packet, OUT sLink& rhs) {
+	inline cPacket& marshalling::operator>>(cPacket& packet, OUT webvprog::sLink& rhs) {
 		packet >> rhs.id;
 		packet >> rhs.from;
 		packet >> rhs.to;
 		return packet;
 	}
 
-	inline cPacket& marshalling::operator>>(cPacket& packet, OUT sSlot& rhs) {
+	inline cPacket& marshalling::operator>>(cPacket& packet, OUT webvprog::sSlot& rhs) {
 		packet >> rhs.id;
-		packet >> rhs.kind;
-		packet >> rhs.type;
+		BYTE val;
+		packet >> val;
+		rhs.kind = (vprog::ePinKind::Enum)val;
+		packet >> val;
+		rhs.type = (vprog::ePinType::Enum)val;
 		packet >> rhs.name;
 		packet.Read4ByteAlign(); // after string parsing
 		return packet;
 	}
 
-	inline cPacket& marshalling::operator>>(cPacket& packet, OUT sNode& rhs) {
+	inline cPacket& marshalling::operator>>(cPacket& packet, OUT webvprog::sNode& rhs) {
 		packet >> rhs.id;
-		packet >> rhs.nodeType;
+		BYTE nodeType;
+		packet >> nodeType;
+		rhs.nodeType = (vprog::eNodeType::Enum) nodeType;
 		packet >> rhs.name;
 		packet.Read4ByteAlign(); // after string parsing
-		MARSHALLING_BIN_GET_SEQ(packet, vector<sSlot>, rhs.inputs);
-		MARSHALLING_BIN_GET_SEQ(packet, vector<sSlot>, rhs.outputs);
+		MARSHALLING_BIN_GET_SEQ(packet, vector<webvprog::sSlot>, rhs.inputs);
+		MARSHALLING_BIN_GET_SEQ(packet, vector<webvprog::sSlot>, rhs.outputs);
+
+		// variable type? parse variable symbol name
+		if (rhs.nodeType == vprog::eNodeType::Variable)
+		{
+			// tricky code, variable node output is only one
+			if (rhs.outputs.size() > 0)
+			{
+				packet >> rhs.outputs.back().varName;
+			}
+			else
+			{
+				// error occurred!!
+				string temp;
+				packet >> temp;
+			}
+			packet.Read4ByteAlign(); // after string parsing
+		}
+
 		return packet;
 	}
 
-	inline cPacket& marshalling::operator>>(cPacket& packet, OUT sNodeFile& rhs) {
+	inline cPacket& marshalling::operator>>(cPacket& packet, OUT webvprog::sNodeFile& rhs) {
 
 		packet >> rhs.version;
 		packet.Read4ByteAlign(); // after string parsing
@@ -238,9 +211,9 @@ namespace network2 {
 		packet >> rhs.offsetX;
 		packet >> rhs.offsetY;
 		packet >> rhs.scale;
-		MARSHALLING_BIN_GET_SEQ(packet, vector<sNode>, rhs.nodes);
-		MARSHALLING_BIN_GET_SEQ(packet, vector<sLink>, rhs.links);
-		MARSHALLING_BIN_GET_SEQ(packet, vector<sSymbol>, rhs.symbolTable);
+		MARSHALLING_BIN_GET_SEQ(packet, vector<webvprog::sNode>, rhs.nodes);
+		MARSHALLING_BIN_GET_SEQ(packet, vector<webvprog::sLink>, rhs.links);
+		MARSHALLING_BIN_GET_SEQ(packet, vector<webvprog::sSymbol>, rhs.symbolTable);
 
 		return packet;
 	}

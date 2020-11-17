@@ -170,6 +170,7 @@
     <ClInclude Include="interpreterserver.h" />
     <ClInclude Include="marshalling_node.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="webvprog.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Common\Common\Common.vcxproj">

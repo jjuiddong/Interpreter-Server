@@ -17,7 +17,7 @@ public:
 	w2s_Protocol() : iProtocol(w2s_Protocol_ID, ePacketFormat::JSON) {}
 	void RecvVisProgData(netid targetId, bool isBinary, const double &lon, const double &lat, const double &altitude, const double &speed, const string &descript);
 	void AckLogin(netid targetId, bool isBinary, const string &id, const int &result);
-	void ReqRun(netid targetId, bool isBinary, const sNodeFile &nodeFile);
+	void ReqRun(netid targetId, bool isBinary, const webvprog::sNodeFile &nodeFile);
 };
 static const int s2w_Protocol_ID = 2000;
 

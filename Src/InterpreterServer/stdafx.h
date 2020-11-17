@@ -5,6 +5,7 @@
 using namespace common;
 
 
+#include "webvprog.h"
 #include "marshalling_node.h"
 #include "../Protocol/Src/visualprogram_Protocol.h"
 #include "../Protocol/Src/visualprogram_ProtocolData.h"

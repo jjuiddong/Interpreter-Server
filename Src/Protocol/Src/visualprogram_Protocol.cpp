@@ -83,7 +83,7 @@ void visualprogram::w2s_Protocol::AckLogin(netid targetId, bool isBinary, const 
 //------------------------------------------------------------------------
 // Protocol: ReqRun
 //------------------------------------------------------------------------
-void visualprogram::w2s_Protocol::ReqRun(netid targetId, bool isBinary, const sNodeFile &nodeFile)
+void visualprogram::w2s_Protocol::ReqRun(netid targetId, bool isBinary, const webvprog::sNodeFile &nodeFile)
 {
 	cPacket packet(m_node->GetPacketHeader());
 	packet.SetProtocolId( GetId() );
