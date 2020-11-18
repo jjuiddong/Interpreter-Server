@@ -71,7 +71,7 @@ bool visualprogram::w2s_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 		}
 		break;
 
-	case 2001:
+	case 2002:
 		{
 			ProtocolHandlers prtHandler;
 			if (!HandlerMatching<w2s_ProtocolHandler>(handlers, prtHandler))
@@ -186,7 +186,7 @@ bool visualprogram::s2w_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 	const int packetId = packet.GetPacketId();
 	switch (packetId)
 	{
-	case 1956887904:
+	case 2001:
 		{
 			ProtocolHandlers prtHandler;
 			if (!HandlerMatching<s2w_ProtocolHandler>(handlers, prtHandler))
@@ -292,6 +292,7 @@ bool visualprogram::s2w_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 				data.pdispatcher = this;
 				data.senderId = packet.GetSenderId();
 				marshalling::operator>>(packet, data.result);
+				marshalling::operator>>(packet, data.icode);
 				SEND_HANDLER(s2w_ProtocolHandler, prtHandler, AckRun(data));
 			}
 			else
@@ -312,6 +313,7 @@ bool visualprogram::s2w_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 					data.pdispatcher = this;
 					data.senderId = packet.GetSenderId();
 					get(props, "result", data.result);
+					get(props, "icode", data.icode);
 					SEND_HANDLER(s2w_ProtocolHandler, prtHandler, AckRun(data));
 				} catch (...) {
 					dbg::Logp("json packet parsing error\n");

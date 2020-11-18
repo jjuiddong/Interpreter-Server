@@ -167,7 +167,6 @@ bool cInterpreterServer::WriteVisProgFile(const StrPath &fileName
 bool cInterpreterServer::RecvVisProgData(visualprogram::RecvVisProgData_Packet &packet)
 {
 	m_protocol.ReqLogin(network2::SERVER_NETID, false, "ReqLogin", "InterpreterServer");
-
 	return true;
 }
 
@@ -193,11 +192,14 @@ bool cInterpreterServer::ReqRun(visualprogram::ReqRun_Packet &packet)
 	if (!icode.Write("test.icode"))
 		return true;
 
-	m_interpreter.Init("test.icode", this, this);
-	m_interpreter.Run();
+	// send icode to webserver
+	m_protocol.AckRun(network2::SERVER_NETID, true, 1, icode);
 
-	script::cEvent evt("Tick Event");
-	m_interpreter.PushEvent(evt);
+	//m_interpreter.Init("test.icode", this, this);
+	//m_interpreter.Run();
+
+	//script::cEvent evt("Tick Event");
+	//m_interpreter.PushEvent(evt);
 
 	return true;
 }

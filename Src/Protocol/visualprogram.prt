@@ -16,7 +16,7 @@ protocol w2s 1000 json
 	{packetid : 2000}
 	RecvVisProgData(double lon, double lat, double altitude, double speed, string descript);
 
-	{packetid : 2001} 
+	{packetid : 2002} 
 	AckLogin(string id, int result);
 
 	{packetid : 2010} 
@@ -27,9 +27,11 @@ protocol w2s 1000 json
 // interpreter server -> webserver
 protocol s2w 2000 json
 {
+	{packetid : 2001} 
 	ReqLogin(string header, string id);
+
 	ReqVisProgData(string header);
 
 	{packetid : 2011} 
-	AckRun(int result);
+	AckRun(int result, script::cIntermediateCode icode);
 }

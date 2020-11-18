@@ -55,6 +55,7 @@ using namespace marshalling_json;
 		cProtocolDispatcher *pdispatcher;
 		netid senderId;
 		int result;
+		script::cIntermediateCode icode;
 	};
 
 

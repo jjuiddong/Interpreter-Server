@@ -51,7 +51,7 @@ void visualprogram::w2s_Protocol::AckLogin(netid targetId, bool isBinary, const 
 {
 	cPacket packet(m_node->GetPacketHeader());
 	packet.SetProtocolId( GetId() );
-	packet.SetPacketId( 2001 );
+	packet.SetPacketId( 2002 );
 	packet.SetPacketOption(0x01, (uint)isBinary);
 	if (isBinary)
 	{
@@ -123,7 +123,7 @@ void visualprogram::s2w_Protocol::ReqLogin(netid targetId, bool isBinary, const 
 {
 	cPacket packet(m_node->GetPacketHeader());
 	packet.SetProtocolId( GetId() );
-	packet.SetPacketId( 1956887904 );
+	packet.SetPacketId( 2001 );
 	packet.SetPacketOption(0x01, (uint)isBinary);
 	if (isBinary)
 	{
@@ -189,7 +189,7 @@ void visualprogram::s2w_Protocol::ReqVisProgData(netid targetId, bool isBinary, 
 //------------------------------------------------------------------------
 // Protocol: AckRun
 //------------------------------------------------------------------------
-void visualprogram::s2w_Protocol::AckRun(netid targetId, bool isBinary, const int &result)
+void visualprogram::s2w_Protocol::AckRun(netid targetId, bool isBinary, const int &result, const script::cIntermediateCode &icode)
 {
 	cPacket packet(m_node->GetPacketHeader());
 	packet.SetProtocolId( GetId() );
@@ -199,6 +199,7 @@ void visualprogram::s2w_Protocol::AckRun(netid targetId, bool isBinary, const in
 	{
 		// marshaling binary
 		marshalling::operator<<(packet, result);
+		marshalling::operator<<(packet, icode);
 		packet.EndPack();
 		GetNode()->Send(targetId, packet);
 	}
@@ -209,6 +210,7 @@ void visualprogram::s2w_Protocol::AckRun(netid targetId, bool isBinary, const in
 		ptree props;
 		try {
 			put(props, "result", result);
+			put(props, "icode", icode);
 			stringstream ss;
 			boost::property_tree::write_json(ss, props);
 			packet << ss.str();

@@ -9,26 +9,30 @@
 namespace network2 {
 	namespace marshalling_json
 	{
-		inline ptree& get(ptree &props, OUT webvprog::sSymbol &rhs) {
+		inline ptree& get(ptree &props, OUT webvprog::sSymbol &rhs) 
+		{
 			rhs.stype = (vprog::eSymbolType::Enum)props.get<BYTE>("stype", 0);
 			rhs.name = props.get<string>("name", "name");
 			return props;
 		}
 
-		inline ptree& get(ptree &props, OUT webvprog::sLink &rhs) {
+		inline ptree& get(ptree &props, OUT webvprog::sLink &rhs) 
+		{
 			rhs.id = props.get<int>("id", 0);
 			rhs.from = props.get<int>("from", 0);
 			rhs.to = props.get<int>("to", 0);
 			return props;
 		}
 
-		inline ptree& get(ptree &props, OUT webvprog::sWidget &rhs) {
+		inline ptree& get(ptree &props, OUT webvprog::sWidget &rhs) 
+		{
 			rhs.id = props.get<int>("id", 0);
 			rhs.name = props.get<string>("name", "name");
 			return props;
 		}
 
-		inline ptree& get(ptree &props, OUT webvprog::sSlot &rhs) {
+		inline ptree& get(ptree &props, OUT webvprog::sSlot &rhs) 
+		{
 			rhs.id = props.get<int>("id", 0);
 			rhs.name = props.get<string>("name", "name");
 			rhs.kind = (vprog::ePinKind::Enum)props.get<int>("kind", 0);
@@ -36,7 +40,8 @@ namespace network2 {
 			return props;
 		}
 
-		inline ptree& get(ptree &props, OUT webvprog::sNode &rhs) {
+		inline ptree& get(ptree &props, OUT webvprog::sNode &rhs) 
+		{
 			ptree &inputs = props.get_child("inputs");
 			for (auto it : inputs) {
 				webvprog::sSlot slot;
@@ -58,12 +63,14 @@ namespace network2 {
 			return props;
 		}
 
-		inline ptree& put(ptree &props, const char *typeName, const webvprog::sNodeFile &rhs) {
+		inline ptree& put(ptree &props, const char *typeName, const webvprog::sNodeFile &rhs) 
+		{
 			// nothing~
 			return props;
 		}
 
-		inline ptree& get(ptree &props, const char *typeName, OUT webvprog::sNodeFile &rhs) {
+		inline ptree& get(ptree &props, const char *typeName, OUT webvprog::sNodeFile &rhs) 
+		{
 			using namespace webvprog;
 
 			ptree &child = props.get_child(typeName);
@@ -99,6 +106,20 @@ namespace network2 {
 
 			return props;
 		}
+
+		inline ptree& put(ptree &props, const char *typeName
+			, const script::cIntermediateCode &rhs)
+		{
+			// nothing~
+			return props;
+		}
+
+		inline ptree& get(ptree &props, const char *typeName
+			, OUT script::cIntermediateCode &rhs)
+		{
+			// nothing~
+			return props;
+		}
 	}
 }
 
@@ -107,20 +128,45 @@ namespace network2 {
 namespace network2 {
 	namespace marshalling {
 		cPacket& operator<<(cPacket& packet, const webvprog::sNodeFile& rhs);
+		cPacket& operator<<(cPacket& packet, const script::cIntermediateCode& rhs);
+		cPacket& operator<<(cPacket& packet, const script::sInstruction& rhs);
 		cPacket& operator>>(cPacket& packet, OUT webvprog::sSymbol& rhs);
 		cPacket& operator>>(cPacket& packet, OUT webvprog::sLink& rhs);
 		cPacket& operator>>(cPacket& packet, OUT webvprog::sSlot& rhs);
 		cPacket& operator>>(cPacket& packet, OUT webvprog::sNode& rhs);
 		cPacket& operator>>(cPacket& packet, OUT webvprog::sNodeFile& rhs);
+		cPacket& operator>>(cPacket& packet, OUT script::cIntermediateCode& rhs);
 	}
 
 	//------------------------------------------------------------------------------
 	// implements
-	inline cPacket& marshalling::operator<<(cPacket& packet, const webvprog::sNodeFile& rhs) {
+	inline cPacket& marshalling::operator<<(cPacket& packet, const webvprog::sNodeFile& rhs) 
+	{
 		return packet; // nothing~
 	}
 
-	inline cPacket& marshalling::operator>>(cPacket& packet, OUT webvprog::sSymbol& rhs) {
+	inline cPacket& marshalling::operator<<(cPacket& packet, const script::sInstruction & rhs)
+	{
+		packet << (BYTE)rhs.cmd;
+		packet << rhs.reg1;
+		packet << rhs.reg2;
+		packet << rhs.str1;
+		packet << rhs.str2;
+		packet.Write4ByteAlign();
+		packet << rhs.var1;
+		return packet;
+	}
+
+	inline cPacket& marshalling::operator<<(cPacket& packet, const script::cIntermediateCode& rhs)
+	{
+		packet << rhs.m_codes.size();
+		for (auto &inst : rhs.m_codes)
+			packet << inst;
+		return packet; // nothing~
+	}
+
+	inline cPacket& marshalling::operator>>(cPacket& packet, OUT webvprog::sSymbol& rhs) 
+	{
 		using namespace webvprog;
 
 		BYTE stype;
@@ -153,14 +199,16 @@ namespace network2 {
 		return packet;
 	}
 
-	inline cPacket& marshalling::operator>>(cPacket& packet, OUT webvprog::sLink& rhs) {
+	inline cPacket& marshalling::operator>>(cPacket& packet, OUT webvprog::sLink& rhs) 
+	{
 		packet >> rhs.id;
 		packet >> rhs.from;
 		packet >> rhs.to;
 		return packet;
 	}
 
-	inline cPacket& marshalling::operator>>(cPacket& packet, OUT webvprog::sSlot& rhs) {
+	inline cPacket& marshalling::operator>>(cPacket& packet, OUT webvprog::sSlot& rhs) 
+	{
 		packet >> rhs.id;
 		BYTE val;
 		packet >> val;
@@ -172,7 +220,8 @@ namespace network2 {
 		return packet;
 	}
 
-	inline cPacket& marshalling::operator>>(cPacket& packet, OUT webvprog::sNode& rhs) {
+	inline cPacket& marshalling::operator>>(cPacket& packet, OUT webvprog::sNode& rhs)
+	{
 		packet >> rhs.id;
 		BYTE nodeType;
 		packet >> nodeType;
@@ -202,8 +251,9 @@ namespace network2 {
 		return packet;
 	}
 
-	inline cPacket& marshalling::operator>>(cPacket& packet, OUT webvprog::sNodeFile& rhs) {
-
+	inline cPacket& marshalling::operator>>(cPacket& packet
+		, OUT webvprog::sNodeFile& rhs) 
+	{
 		packet >> rhs.version;
 		packet.Read4ByteAlign(); // after string parsing
 		packet >> rhs.title;
@@ -214,7 +264,12 @@ namespace network2 {
 		MARSHALLING_BIN_GET_SEQ(packet, vector<webvprog::sNode>, rhs.nodes);
 		MARSHALLING_BIN_GET_SEQ(packet, vector<webvprog::sLink>, rhs.links);
 		MARSHALLING_BIN_GET_SEQ(packet, vector<webvprog::sSymbol>, rhs.symbolTable);
+		return packet;
+	}
 
+	inline cPacket& marshalling::operator>>(cPacket& packet, OUT script::cIntermediateCode& rhs) 
+	{
+		// nothing~
 		return packet;
 	}
 }

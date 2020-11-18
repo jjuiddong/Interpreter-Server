@@ -27,6 +27,6 @@ public:
 	s2w_Protocol() : iProtocol(s2w_Protocol_ID, ePacketFormat::JSON) {}
 	void ReqLogin(netid targetId, bool isBinary, const string &header, const string &id);
 	void ReqVisProgData(netid targetId, bool isBinary, const string &header);
-	void AckRun(netid targetId, bool isBinary, const int &result);
+	void AckRun(netid targetId, bool isBinary, const int &result, const script::cIntermediateCode &icode);
 };
 }
