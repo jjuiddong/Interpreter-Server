@@ -9,27 +9,23 @@ namespace visualprogram {
 
 using namespace network2;
 using namespace marshalling_json;
-static const int w2s_Protocol_ID = 1000;
+static const int s2r_Protocol_ID = 1000;
 
-class w2s_Protocol : public network2::iProtocol
+class s2r_Protocol : public network2::iProtocol
 {
 public:
-	w2s_Protocol() : iProtocol(w2s_Protocol_ID, ePacketFormat::JSON) {}
-	void RecvVisProgData(netid targetId, bool isBinary, const double &lon, const double &lat, const double &altitude, const double &speed, const string &descript);
+	s2r_Protocol() : iProtocol(s2r_Protocol_ID, ePacketFormat::JSON) {}
+	void Welcome(netid targetId, bool isBinary, const string &msg);
 	void AckLogin(netid targetId, bool isBinary, const string &id, const int &result);
-	void ReqRun(netid targetId, bool isBinary, const webvprog::sNodeFile &nodeFile);
-	void ReqEvent(netid targetId, bool isBinary, const string &eventName);
+	void ReqVisualProgRun(netid targetId, bool isBinary, const webvprog::sNodeFile &nodeFile);
 };
-static const int s2w_Protocol_ID = 2000;
+static const int r2s_Protocol_ID = 2000;
 
-class s2w_Protocol : public network2::iProtocol
+class r2s_Protocol : public network2::iProtocol
 {
 public:
-	s2w_Protocol() : iProtocol(s2w_Protocol_ID, ePacketFormat::JSON) {}
-	void ReqLogin(netid targetId, bool isBinary, const string &header, const string &id);
-	void ReqVisProgData(netid targetId, bool isBinary, const string &header);
-	void AckRun(netid targetId, bool isBinary, const int &result, const script::cIntermediateCode &icode);
-	void AckEvent(netid targetId, bool isBinary, const string &eventName, const int &result);
-	void SyncRegister(netid targetId, bool isBinary, const int &vmIdx, const webvprog::sRegister &reg);
+	r2s_Protocol() : iProtocol(r2s_Protocol_ID, ePacketFormat::JSON) {}
+	void ReqLogin(netid targetId, bool isBinary, const string &id);
+	void AckVisualProgRun(netid targetId, bool isBinary, const int &result);
 };
 }

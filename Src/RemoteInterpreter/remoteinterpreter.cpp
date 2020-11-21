@@ -4,7 +4,6 @@
 
 
 cRemoteInterpreter::cRemoteInterpreter()
-	: m_syncTime(0.f)
 {
 }
 
@@ -21,13 +20,11 @@ bool cRemoteInterpreter::Init(const string &url, const int port)
 {
 	Clear();
 
-	m_timer.Create();
-	m_client.AddProtocolHandler(this);
-	m_client.RegisterProtocol(&m_protocol);
+	m_remoteDebugger.m_client.AddProtocolHandler(this);
+	m_remoteDebugger.m_client.RegisterProtocol(&m_protocol);
 
-	if (!m_netController.StartWebClient(&m_client, url, port))
+	if (!m_remoteDebugger.InitHost(url, port, this, this))
 	{
-		dbg::Logc(2, "Error WebClient Connection url:%s, port:%d\n", url.c_str(), port);
 		return false;
 	}
 
@@ -38,29 +35,8 @@ bool cRemoteInterpreter::Init(const string &url, const int port)
 // process
 bool cRemoteInterpreter::Update()
 {
-	const float dt = (float)m_timer.GetDeltaSeconds();
-	m_netController.Process(dt);
-	m_interpreter.Process(dt);
-
-	m_syncTime += dt;
-	if (m_syncTime > 5.0f)
-	{
-		m_syncTime = 0.f;
-
-		// sync register
-		for (auto &vm : m_interpreter.m_vms)
-		{
-			webvprog::sRegister reg;
-			reg.idx = vm->m_reg.idx;
-			reg.cmp = vm->m_reg.cmp;
-			for (uint i = 0; i < ARRAYSIZE(vm->m_reg.val); ++i)
-				reg.val[i] = common::copyvariant(vm->m_reg.val[i]);
-			m_protocol.SyncRegister(network2::SERVER_NETID, true, 0, reg);
-			break;
-		}
-	}
-
-	return m_client.IsFailConnection()? false : true;
+	const bool result = m_remoteDebugger.Process();
+	return result;
 }
 
 
@@ -183,9 +159,9 @@ bool cRemoteInterpreter::WriteVisProgFile(const StrPath &fileName
 
 
 // receive from webserver
-bool cRemoteInterpreter::RecvVisProgData(visualprogram::RecvVisProgData_Packet &packet)
+bool cRemoteInterpreter::Welcome(visualprogram::Welcome_Packet &packet)
 {
-	m_protocol.ReqLogin(network2::SERVER_NETID, false, "ReqLogin", "InterpreterServer");
+	m_protocol.ReqLogin(network2::SERVER_NETID, false, "InterpreterServer");
 	return true;
 }
 
@@ -196,54 +172,63 @@ bool cRemoteInterpreter::AckLogin(visualprogram::AckLogin_Packet &packet)
 }
 
 
-bool cRemoteInterpreter::ReqRun(visualprogram::ReqRun_Packet &packet)
-{
+bool cRemoteInterpreter::ReqVisualProgRun(visualprogram::ReqVisualProgRun_Packet &packet)
+{ 
 	// nodeFile convert to visual programming file *.vprog
 	WriteVisProgFile("test.vprog", packet.nodeFile);
 
 	// generate intermediate code and write file
 	vprog::cVProgFile vprogFile;
-	if (!vprogFile.Read("test.vprog"))
-		return true;
-
 	common::script::cIntermediateCode icode;
+
+	if (!vprogFile.Read("test.vprog"))
+		goto $error;
+
 	vprogFile.GenerateIntermediateCode(icode);
 	if (!icode.Write("test.icode"))
-		return true;
+		goto $error;
 
-	// send icode to webserver
-	m_protocol.AckRun(network2::SERVER_NETID, true, 1, icode);
+	if (!m_remoteDebugger.LoadIntermediateCode("test.icode"))
+		goto $error;
 
-	m_interpreter.Init("test.icode", this, this);
-	m_interpreter.Run();
-	script::cEvent evt("Tick Event");
-	m_interpreter.PushEvent(evt);
+	//// send icode to webserver
+	//m_protocol.AckRun(network2::SERVER_NETID, true, 1, icode);
 
-	for (auto &vm : m_interpreter.m_vms)
-	{
-		webvprog::sRegister reg;
-		reg.idx = vm->m_reg.idx;
-		reg.cmp = vm->m_reg.cmp;
-		for (uint i = 0; i < ARRAYSIZE(vm->m_reg.val); ++i)
-			reg.val[i] = common::copyvariant(vm->m_reg.val[i]);
-		m_protocol.SyncRegister(network2::SERVER_NETID, true, 0, reg);
-		break;
-	}
+	//m_interpreter.Init("test.icode", this, this);
+	//m_interpreter.Run();
+	//script::cEvent evt("Tick Event");
+	//m_interpreter.PushEvent(evt);
 
+	//for (auto &vm : m_interpreter.m_vms)
+	//{
+	//	webvprog::sRegister reg;
+	//	reg.idx = vm->m_reg.idx;
+	//	reg.cmp = vm->m_reg.cmp;
+	//	for (uint i = 0; i < ARRAYSIZE(vm->m_reg.val); ++i)
+	//		reg.val[i] = common::copyvariant(vm->m_reg.val[i]);
+	//	m_protocol.SyncRegister(network2::SERVER_NETID, true, 0, reg);
+	//	break;
+	//}
+	m_protocol.AckVisualProgRun(network2::SERVER_NETID, false, 1);
 	return true;
-}
 
 
-// ReqEvent packet handling
-bool cRemoteInterpreter::ReqEvent(visualprogram::ReqEvent_Packet &packet) 
-{
-	script::cEvent evt(packet.eventName);
-	m_interpreter.PushEvent(evt);
+$error:
+	m_protocol.AckVisualProgRun(network2::SERVER_NETID, false, 0);
 	return true; 
 }
 
 
-// iFunctionCallback overriding
+//// ReqEvent packet handling
+//bool cRemoteInterpreter::ReqEvent(visualprogram::ReqEvent_Packet &packet) 
+//{
+//	//script::cEvent evt(packet.eventName);
+//	//m_interpreter.PushEvent(evt);
+//	return true; 
+//}
+
+
+// cInterpreter::iFunctionCallback overriding
 int cRemoteInterpreter::Function(script::cSymbolTable &symbolTable
 	, const string &scopeName
 	, const string &funcName
@@ -256,6 +241,5 @@ int cRemoteInterpreter::Function(script::cSymbolTable &symbolTable
 
 void cRemoteInterpreter::Clear()
 {
-	m_client.Close();
-	m_netController.Clear();
+	m_remoteDebugger.Clear();
 }

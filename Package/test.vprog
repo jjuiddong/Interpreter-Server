@@ -150,7 +150,7 @@ node
 initvar
 	scopename name-10240
 	name out
-	value "1"
+	value "0"
 	type Bool
 initvar
 	scopename name-10261

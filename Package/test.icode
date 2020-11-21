@@ -24,6 +24,6 @@ nop
 nop
 "blank":
 nop
-symbolb "name-10240", "out", 1
+symbolb "name-10240", "out", 0
 symbols "name-10261", "out", "true string"
 symbols "name-10274", "out", "false string"

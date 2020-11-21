@@ -11,56 +11,52 @@ namespace visualprogram {
 
 using namespace network2;
 using namespace marshalling_json;
-static const int w2s_Dispatcher_ID = 1000;
+static const int s2r_Dispatcher_ID = 1000;
 
 // Protocol Dispatcher
-class w2s_Dispatcher: public network2::cProtocolDispatcher
+class s2r_Dispatcher: public network2::cProtocolDispatcher
 {
 public:
-	w2s_Dispatcher();
+	s2r_Dispatcher();
 protected:
 	virtual bool Dispatch(cPacket &packet, const ProtocolHandlers &handlers) override;
 };
-static w2s_Dispatcher g_visualprogram_w2s_Dispatcher;
+static s2r_Dispatcher g_visualprogram_s2r_Dispatcher;
 
 
 // ProtocolHandler
-class w2s_ProtocolHandler : virtual public network2::iProtocolHandler
+class s2r_ProtocolHandler : virtual public network2::iProtocolHandler
 {
 public:
-	friend class w2s_Dispatcher;
-	w2s_ProtocolHandler() { m_format = ePacketFormat::JSON; }
-	virtual bool RecvVisProgData(visualprogram::RecvVisProgData_Packet &packet) { return true; }
+	friend class s2r_Dispatcher;
+	s2r_ProtocolHandler() { m_format = ePacketFormat::JSON; }
+	virtual bool Welcome(visualprogram::Welcome_Packet &packet) { return true; }
 	virtual bool AckLogin(visualprogram::AckLogin_Packet &packet) { return true; }
-	virtual bool ReqRun(visualprogram::ReqRun_Packet &packet) { return true; }
-	virtual bool ReqEvent(visualprogram::ReqEvent_Packet &packet) { return true; }
+	virtual bool ReqVisualProgRun(visualprogram::ReqVisualProgRun_Packet &packet) { return true; }
 };
 
 
-static const int s2w_Dispatcher_ID = 2000;
+static const int r2s_Dispatcher_ID = 2000;
 
 // Protocol Dispatcher
-class s2w_Dispatcher: public network2::cProtocolDispatcher
+class r2s_Dispatcher: public network2::cProtocolDispatcher
 {
 public:
-	s2w_Dispatcher();
+	r2s_Dispatcher();
 protected:
 	virtual bool Dispatch(cPacket &packet, const ProtocolHandlers &handlers) override;
 };
-static s2w_Dispatcher g_visualprogram_s2w_Dispatcher;
+static r2s_Dispatcher g_visualprogram_r2s_Dispatcher;
 
 
 // ProtocolHandler
-class s2w_ProtocolHandler : virtual public network2::iProtocolHandler
+class r2s_ProtocolHandler : virtual public network2::iProtocolHandler
 {
 public:
-	friend class s2w_Dispatcher;
-	s2w_ProtocolHandler() { m_format = ePacketFormat::JSON; }
+	friend class r2s_Dispatcher;
+	r2s_ProtocolHandler() { m_format = ePacketFormat::JSON; }
 	virtual bool ReqLogin(visualprogram::ReqLogin_Packet &packet) { return true; }
-	virtual bool ReqVisProgData(visualprogram::ReqVisProgData_Packet &packet) { return true; }
-	virtual bool AckRun(visualprogram::AckRun_Packet &packet) { return true; }
-	virtual bool AckEvent(visualprogram::AckEvent_Packet &packet) { return true; }
-	virtual bool SyncRegister(visualprogram::SyncRegister_Packet &packet) { return true; }
+	virtual bool AckVisualProgRun(visualprogram::AckVisualProgRun_Packet &packet) { return true; }
 };
 
 
