@@ -33,6 +33,7 @@ public:
 	virtual bool RecvVisProgData(visualprogram::RecvVisProgData_Packet &packet) { return true; }
 	virtual bool AckLogin(visualprogram::AckLogin_Packet &packet) { return true; }
 	virtual bool ReqRun(visualprogram::ReqRun_Packet &packet) { return true; }
+	virtual bool ReqEvent(visualprogram::ReqEvent_Packet &packet) { return true; }
 };
 
 
@@ -58,6 +59,8 @@ public:
 	virtual bool ReqLogin(visualprogram::ReqLogin_Packet &packet) { return true; }
 	virtual bool ReqVisProgData(visualprogram::ReqVisProgData_Packet &packet) { return true; }
 	virtual bool AckRun(visualprogram::AckRun_Packet &packet) { return true; }
+	virtual bool AckEvent(visualprogram::AckEvent_Packet &packet) { return true; }
+	virtual bool SyncRegister(visualprogram::SyncRegister_Packet &packet) { return true; }
 };
 
 

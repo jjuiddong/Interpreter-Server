@@ -161,6 +161,50 @@ bool visualprogram::w2s_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 		}
 		break;
 
+	case 2012:
+		{
+			ProtocolHandlers prtHandler;
+			if (!HandlerMatching<w2s_ProtocolHandler>(handlers, prtHandler))
+				return false;
+
+			SetCurrentDispatchPacket( &packet );
+
+			const bool isBinary = packet.GetPacketOption(0x01) > 0;
+			if (isBinary)
+			{
+				// binary parsing
+				ReqEvent_Packet data;
+				data.pdispatcher = this;
+				data.senderId = packet.GetSenderId();
+				marshalling::operator>>(packet, data.eventName);
+				SEND_HANDLER(w2s_ProtocolHandler, prtHandler, ReqEvent(data));
+			}
+			else
+			{
+				// json format packet parsing using property_tree
+				using boost::property_tree::ptree;
+				ptree root;
+
+				try {
+					string str;
+					packet >> str;
+					stringstream ss(str);
+					
+					boost::property_tree::read_json(ss, root);
+					ptree &props = root.get_child("");
+
+					ReqEvent_Packet data;
+					data.pdispatcher = this;
+					data.senderId = packet.GetSenderId();
+					get(props, "eventName", data.eventName);
+					SEND_HANDLER(w2s_ProtocolHandler, prtHandler, ReqEvent(data));
+				} catch (...) {
+					dbg::Logp("json packet parsing error\n");
+				}
+			}
+		}
+		break;
+
 	default:
 		assert(0);
 		break;
@@ -315,6 +359,98 @@ bool visualprogram::s2w_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 					get(props, "result", data.result);
 					get(props, "icode", data.icode);
 					SEND_HANDLER(s2w_ProtocolHandler, prtHandler, AckRun(data));
+				} catch (...) {
+					dbg::Logp("json packet parsing error\n");
+				}
+			}
+		}
+		break;
+
+	case 2013:
+		{
+			ProtocolHandlers prtHandler;
+			if (!HandlerMatching<s2w_ProtocolHandler>(handlers, prtHandler))
+				return false;
+
+			SetCurrentDispatchPacket( &packet );
+
+			const bool isBinary = packet.GetPacketOption(0x01) > 0;
+			if (isBinary)
+			{
+				// binary parsing
+				AckEvent_Packet data;
+				data.pdispatcher = this;
+				data.senderId = packet.GetSenderId();
+				marshalling::operator>>(packet, data.eventName);
+				marshalling::operator>>(packet, data.result);
+				SEND_HANDLER(s2w_ProtocolHandler, prtHandler, AckEvent(data));
+			}
+			else
+			{
+				// json format packet parsing using property_tree
+				using boost::property_tree::ptree;
+				ptree root;
+
+				try {
+					string str;
+					packet >> str;
+					stringstream ss(str);
+					
+					boost::property_tree::read_json(ss, root);
+					ptree &props = root.get_child("");
+
+					AckEvent_Packet data;
+					data.pdispatcher = this;
+					data.senderId = packet.GetSenderId();
+					get(props, "eventName", data.eventName);
+					get(props, "result", data.result);
+					SEND_HANDLER(s2w_ProtocolHandler, prtHandler, AckEvent(data));
+				} catch (...) {
+					dbg::Logp("json packet parsing error\n");
+				}
+			}
+		}
+		break;
+
+	case 2021:
+		{
+			ProtocolHandlers prtHandler;
+			if (!HandlerMatching<s2w_ProtocolHandler>(handlers, prtHandler))
+				return false;
+
+			SetCurrentDispatchPacket( &packet );
+
+			const bool isBinary = packet.GetPacketOption(0x01) > 0;
+			if (isBinary)
+			{
+				// binary parsing
+				SyncRegister_Packet data;
+				data.pdispatcher = this;
+				data.senderId = packet.GetSenderId();
+				marshalling::operator>>(packet, data.vmIdx);
+				marshalling::operator>>(packet, data.reg);
+				SEND_HANDLER(s2w_ProtocolHandler, prtHandler, SyncRegister(data));
+			}
+			else
+			{
+				// json format packet parsing using property_tree
+				using boost::property_tree::ptree;
+				ptree root;
+
+				try {
+					string str;
+					packet >> str;
+					stringstream ss(str);
+					
+					boost::property_tree::read_json(ss, root);
+					ptree &props = root.get_child("");
+
+					SyncRegister_Packet data;
+					data.pdispatcher = this;
+					data.senderId = packet.GetSenderId();
+					get(props, "vmIdx", data.vmIdx);
+					get(props, "reg", data.reg);
+					SEND_HANDLER(s2w_ProtocolHandler, prtHandler, SyncRegister(data));
 				} catch (...) {
 					dbg::Logp("json packet parsing error\n");
 				}

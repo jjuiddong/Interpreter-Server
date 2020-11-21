@@ -21,6 +21,10 @@ protocol w2s 1000 json
 
 	{packetid : 2010} 
 	ReqRun(webvprog::sNodeFile nodeFile);
+
+	{packetid : 2012} 
+	ReqEvent(string eventName);
+
 }
 
 
@@ -34,4 +38,11 @@ protocol s2w 2000 json
 
 	{packetid : 2011} 
 	AckRun(int result, script::cIntermediateCode icode);
+
+	{packetid : 2013} 
+	AckEvent(string eventName, int result);
+
+	{packetid : 2021} 
+	SyncRegister( int vmIdx, webvprog::sRegister reg );
+
 }

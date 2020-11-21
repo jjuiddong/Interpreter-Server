@@ -1,13 +1,14 @@
 
 #include "stdafx.h"
-#include "interpreterserver.h"
+#include "remoteinterpreter.h"
 
 
-cInterpreterServer::cInterpreterServer()
+cRemoteInterpreter::cRemoteInterpreter()
+	: m_syncTime(0.f)
 {
 }
 
-cInterpreterServer::~cInterpreterServer()
+cRemoteInterpreter::~cRemoteInterpreter()
 {
 	Clear();
 }
@@ -16,7 +17,7 @@ cInterpreterServer::~cInterpreterServer()
 // initialize interpreter server
 // url: interpreter web server url
 // port: interpreter web server port
-bool cInterpreterServer::Init(const string &url, const int port)
+bool cRemoteInterpreter::Init(const string &url, const int port)
 {
 	Clear();
 
@@ -35,18 +36,36 @@ bool cInterpreterServer::Init(const string &url, const int port)
 
 
 // process
-bool cInterpreterServer::Update()
+bool cRemoteInterpreter::Update()
 {
 	const float dt = (float)m_timer.GetDeltaSeconds();
 	m_netController.Process(dt);
 	m_interpreter.Process(dt);
+
+	m_syncTime += dt;
+	if (m_syncTime > 5.0f)
+	{
+		m_syncTime = 0.f;
+
+		// sync register
+		for (auto &vm : m_interpreter.m_vms)
+		{
+			webvprog::sRegister reg;
+			reg.idx = vm->m_reg.idx;
+			reg.cmp = vm->m_reg.cmp;
+			for (uint i = 0; i < ARRAYSIZE(vm->m_reg.val); ++i)
+				reg.val[i] = common::copyvariant(vm->m_reg.val[i]);
+			m_protocol.SyncRegister(network2::SERVER_NETID, true, 0, reg);
+			break;
+		}
+	}
 
 	return m_client.IsFailConnection()? false : true;
 }
 
 
 // wirte *.vprog file from sNodeFile
-bool cInterpreterServer::WriteVisProgFile(const StrPath &fileName
+bool cRemoteInterpreter::WriteVisProgFile(const StrPath &fileName
 	, const webvprog::sNodeFile &nodeFile)
 {
 	using namespace std;
@@ -94,7 +113,7 @@ bool cInterpreterServer::WriteVisProgFile(const StrPath &fileName
 			ofs << tab << "input" << endl;
 			tab = "\t\t";
 			ofs << tab << "type " << vprog::ePinType::ToString(slot.type) << endl;
-			ofs << tab << "kind " << vprog::ePinKind::ToString(slot.kind) << endl;
+			//ofs << tab << "kind " << vprog::ePinKind::ToString(slot.kind) << endl;
 			ofs << tab << "id " << slot.id << endl;
 			ofs << tab << "name \"" << slot.name << "\"" << endl;
 
@@ -119,7 +138,7 @@ bool cInterpreterServer::WriteVisProgFile(const StrPath &fileName
 			ofs << tab << "output" << endl;
 			tab = "\t\t";
 			ofs << tab << "type " << vprog::ePinType::ToString(slot.type) << endl;
-			ofs << tab << "kind " << vprog::ePinKind::ToString(slot.kind) << endl;
+			//ofs << tab << "kind " << vprog::ePinKind::ToString(slot.kind) << endl;
 			ofs << tab << "id " << slot.id << endl;
 			ofs << tab << "name \"" << slot.name << "\"" << endl;
 
@@ -164,20 +183,20 @@ bool cInterpreterServer::WriteVisProgFile(const StrPath &fileName
 
 
 // receive from webserver
-bool cInterpreterServer::RecvVisProgData(visualprogram::RecvVisProgData_Packet &packet)
+bool cRemoteInterpreter::RecvVisProgData(visualprogram::RecvVisProgData_Packet &packet)
 {
 	m_protocol.ReqLogin(network2::SERVER_NETID, false, "ReqLogin", "InterpreterServer");
 	return true;
 }
 
 
-bool cInterpreterServer::AckLogin(visualprogram::AckLogin_Packet &packet)
+bool cRemoteInterpreter::AckLogin(visualprogram::AckLogin_Packet &packet)
 {
 	return true;
 }
 
 
-bool cInterpreterServer::ReqRun(visualprogram::ReqRun_Packet &packet)
+bool cRemoteInterpreter::ReqRun(visualprogram::ReqRun_Packet &packet)
 {
 	// nodeFile convert to visual programming file *.vprog
 	WriteVisProgFile("test.vprog", packet.nodeFile);
@@ -195,18 +214,37 @@ bool cInterpreterServer::ReqRun(visualprogram::ReqRun_Packet &packet)
 	// send icode to webserver
 	m_protocol.AckRun(network2::SERVER_NETID, true, 1, icode);
 
-	//m_interpreter.Init("test.icode", this, this);
-	//m_interpreter.Run();
+	m_interpreter.Init("test.icode", this, this);
+	m_interpreter.Run();
+	script::cEvent evt("Tick Event");
+	m_interpreter.PushEvent(evt);
 
-	//script::cEvent evt("Tick Event");
-	//m_interpreter.PushEvent(evt);
+	for (auto &vm : m_interpreter.m_vms)
+	{
+		webvprog::sRegister reg;
+		reg.idx = vm->m_reg.idx;
+		reg.cmp = vm->m_reg.cmp;
+		for (uint i = 0; i < ARRAYSIZE(vm->m_reg.val); ++i)
+			reg.val[i] = common::copyvariant(vm->m_reg.val[i]);
+		m_protocol.SyncRegister(network2::SERVER_NETID, true, 0, reg);
+		break;
+	}
 
 	return true;
 }
 
 
+// ReqEvent packet handling
+bool cRemoteInterpreter::ReqEvent(visualprogram::ReqEvent_Packet &packet) 
+{
+	script::cEvent evt(packet.eventName);
+	m_interpreter.PushEvent(evt);
+	return true; 
+}
+
+
 // iFunctionCallback overriding
-int cInterpreterServer::Function(script::cSymbolTable &symbolTable
+int cRemoteInterpreter::Function(script::cSymbolTable &symbolTable
 	, const string &scopeName
 	, const string &funcName
 	, void *arg)
@@ -216,7 +254,7 @@ int cInterpreterServer::Function(script::cSymbolTable &symbolTable
 }
 
 
-void cInterpreterServer::Clear()
+void cRemoteInterpreter::Clear()
 {
 	m_client.Close();
 	m_netController.Clear();

@@ -34,6 +34,12 @@ using namespace marshalling_json;
 		webvprog::sNodeFile nodeFile;
 	};
 
+	struct ReqEvent_Packet {
+		cProtocolDispatcher *pdispatcher;
+		netid senderId;
+		string eventName;
+	};
+
 
 
 
@@ -56,6 +62,20 @@ using namespace marshalling_json;
 		netid senderId;
 		int result;
 		script::cIntermediateCode icode;
+	};
+
+	struct AckEvent_Packet {
+		cProtocolDispatcher *pdispatcher;
+		netid senderId;
+		string eventName;
+		int result;
+	};
+
+	struct SyncRegister_Packet {
+		cProtocolDispatcher *pdispatcher;
+		netid senderId;
+		int vmIdx;
+		webvprog::sRegister reg;
 	};
 
 

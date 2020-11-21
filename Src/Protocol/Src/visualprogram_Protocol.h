@@ -18,6 +18,7 @@ public:
 	void RecvVisProgData(netid targetId, bool isBinary, const double &lon, const double &lat, const double &altitude, const double &speed, const string &descript);
 	void AckLogin(netid targetId, bool isBinary, const string &id, const int &result);
 	void ReqRun(netid targetId, bool isBinary, const webvprog::sNodeFile &nodeFile);
+	void ReqEvent(netid targetId, bool isBinary, const string &eventName);
 };
 static const int s2w_Protocol_ID = 2000;
 
@@ -28,5 +29,7 @@ public:
 	void ReqLogin(netid targetId, bool isBinary, const string &header, const string &id);
 	void ReqVisProgData(netid targetId, bool isBinary, const string &header);
 	void AckRun(netid targetId, bool isBinary, const int &result, const script::cIntermediateCode &icode);
+	void AckEvent(netid targetId, bool isBinary, const string &eventName, const int &result);
+	void SyncRegister(netid targetId, bool isBinary, const int &vmIdx, const webvprog::sRegister &reg);
 };
 }

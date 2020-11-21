@@ -1,6 +1,6 @@
-# Interpreter-Server
+# Interpreter-Server / Remote Interpreter
 
-visual program interpreter server with VS2017 C++
+visual program Remote Interpreter with VS2017 C++
 - generate intermediate code
 - webserver connection
 	- using websocket

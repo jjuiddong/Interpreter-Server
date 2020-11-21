@@ -1,18 +1,19 @@
 //
 // 2020-11-13, jjuiddong
-// Visual Programming Interpreter Server
+// Visual Programming Remote Interpreter
 //	- visual program source download from webserver
+//	- run visual program with script interpreter
 //
 #pragma once
 
 
-class cInterpreterServer : public visualprogram::w2s_ProtocolHandler
+class cRemoteInterpreter : public visualprogram::w2s_ProtocolHandler
 						, public all::AllProtocolDisplayer
 						, public script::iFunctionCallback
 {
 public:
-	cInterpreterServer();
-	virtual ~cInterpreterServer();
+	cRemoteInterpreter();
+	virtual ~cRemoteInterpreter();
 
 	bool Init(const string &url, const int port);
 	bool Update();
@@ -32,6 +33,7 @@ protected:
 	virtual bool RecvVisProgData(visualprogram::RecvVisProgData_Packet &packet) override;
 	virtual bool AckLogin(visualprogram::AckLogin_Packet &packet) override;
 	virtual bool ReqRun(visualprogram::ReqRun_Packet &packet) override;
+	virtual bool ReqEvent(visualprogram::ReqEvent_Packet &packet) override;
 
 
 public:
@@ -39,6 +41,7 @@ public:
 	network2::cWebClient m_client;
 	visualprogram::s2w_Protocol m_protocol;
 	cTimer m_timer;
+	float m_syncTime;
 
 	common::script::cInterpreter m_interpreter;
 	common::script::cDebugger m_debugger;

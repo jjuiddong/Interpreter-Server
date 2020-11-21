@@ -1,10 +1,10 @@
 //
 // 2020-11-13, jjuiddong
-// interpreter server with websocket
+// remote interpreter with websocket
 //
 //
 #include "stdafx.h"
-#include "interpreterserver.h"
+#include "remoteinterpreter.h"
 
 using namespace std;
 using namespace network2;
@@ -41,21 +41,22 @@ int ThreadFunction()
 	const string url = "jjuiddong.iptime.org";
 	const int port = 4001;
 
-	cInterpreterServer server;
-	if (!server.Init(url, port))
+	cRemoteInterpreter remoteInterpreter;
+	if (!remoteInterpreter.Init(url, port))
 	{
-		cout << "Error InterpreterServer Initialize" << endl;
+		cout << "Error RemoteInterpreter Initialize" << endl;
 		return 0;
 	}
 
-	cout << "Start Interpreter Server" << endl;
+	cout << "Start Remote Interpreter" << endl;
 
 	while (g_isLoop)
 	{
-		if (!server.Update())
+		if (!remoteInterpreter.Update())
 			break;
 		Sleep(1);
 	}
 
+	dbg::TerminateLogThread();
 	return 1;
 }
