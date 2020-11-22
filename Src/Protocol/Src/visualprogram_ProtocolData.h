@@ -24,10 +24,15 @@ using namespace marshalling_json;
 		int result;
 	};
 
-	struct ReqVisualProgRun_Packet {
+	struct ReqRunVisualProg_Packet {
 		cProtocolDispatcher *pdispatcher;
 		netid senderId;
 		webvprog::sNodeFile nodeFile;
+	};
+
+	struct ReqStopVisualProg_Packet {
+		cProtocolDispatcher *pdispatcher;
+		netid senderId;
 	};
 
 
@@ -40,7 +45,13 @@ using namespace marshalling_json;
 		string id;
 	};
 
-	struct AckVisualProgRun_Packet {
+	struct AckRunVisualProg_Packet {
+		cProtocolDispatcher *pdispatcher;
+		netid senderId;
+		int result;
+	};
+
+	struct AckStopVisualProg_Packet {
 		cProtocolDispatcher *pdispatcher;
 		netid senderId;
 		int result;

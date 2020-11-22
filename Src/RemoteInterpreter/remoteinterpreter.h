@@ -32,8 +32,8 @@ protected:
 	// visualprogram protocol handler
 	virtual bool Welcome(visualprogram::Welcome_Packet &packet) override;
 	virtual bool AckLogin(visualprogram::AckLogin_Packet &packet) override;
-	virtual bool ReqVisualProgRun(visualprogram::ReqVisualProgRun_Packet &packet) override;
-
+	virtual bool ReqRunVisualProg(visualprogram::ReqRunVisualProg_Packet &packet) override;
+	virtual bool ReqStopVisualProg(visualprogram::ReqStopVisualProg_Packet &packet) override;
 
 public:
 	network2::cRemoteDebugger2 m_remoteDebugger;

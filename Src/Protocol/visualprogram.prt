@@ -18,8 +18,8 @@ protocol s2r 1000 json
 {
 	Welcome(string msg);
 	AckLogin(string id, int result);
-	ReqVisualProgRun(webvprog::sNodeFile nodeFile);
-//	ReqEvent(string eventName);
+	ReqRunVisualProg(webvprog::sNodeFile nodeFile);
+	ReqStopVisualProg();
 }
 
 
@@ -27,8 +27,6 @@ protocol s2r 1000 json
 protocol r2s 2000 json
 {
 	ReqLogin(string id);
-	AckVisualProgRun(int result);
-//	AckRun(int result, script::cIntermediateCode icode);
-//	AckEvent(string eventName, int result);
-//	SyncRegister( int vmIdx, webvprog::sRegister reg );
+	AckRunVisualProg(int result);
+	AckStopVisualProg(int result);
 }

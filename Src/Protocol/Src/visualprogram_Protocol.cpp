@@ -73,13 +73,13 @@ void visualprogram::s2r_Protocol::AckLogin(netid targetId, bool isBinary, const 
 }
 
 //------------------------------------------------------------------------
-// Protocol: ReqVisualProgRun
+// Protocol: ReqRunVisualProg
 //------------------------------------------------------------------------
-void visualprogram::s2r_Protocol::ReqVisualProgRun(netid targetId, bool isBinary, const webvprog::sNodeFile &nodeFile)
+void visualprogram::s2r_Protocol::ReqRunVisualProg(netid targetId, bool isBinary, const webvprog::sNodeFile &nodeFile)
 {
 	cPacket packet(m_node->GetPacketHeader());
 	packet.SetProtocolId( GetId() );
-	packet.SetPacketId( 1974715764 );
+	packet.SetPacketId( 2250021743 );
 	packet.SetPacketOption(0x01, (uint)isBinary);
 	if (isBinary)
 	{
@@ -95,6 +95,38 @@ void visualprogram::s2r_Protocol::ReqVisualProgRun(netid targetId, bool isBinary
 		ptree props;
 		try {
 			put(props, "nodeFile", nodeFile);
+			stringstream ss;
+			boost::property_tree::write_json(ss, props);
+			packet << ss.str();
+			packet.EndPack();
+			GetNode()->Send(targetId, packet);
+		} catch (...) {
+			dbg::Logp("json packet maker error\n");
+		}
+	}
+}
+
+//------------------------------------------------------------------------
+// Protocol: ReqStopVisualProg
+//------------------------------------------------------------------------
+void visualprogram::s2r_Protocol::ReqStopVisualProg(netid targetId, bool isBinary)
+{
+	cPacket packet(m_node->GetPacketHeader());
+	packet.SetProtocolId( GetId() );
+	packet.SetPacketId( 4258374867 );
+	packet.SetPacketOption(0x01, (uint)isBinary);
+	if (isBinary)
+	{
+		// marshaling binary
+		packet.EndPack();
+		GetNode()->Send(targetId, packet);
+	}
+	else
+	{
+		// marshaling json
+		using boost::property_tree::ptree;
+		ptree props;
+		try {
 			stringstream ss;
 			boost::property_tree::write_json(ss, props);
 			packet << ss.str();
@@ -143,13 +175,47 @@ void visualprogram::r2s_Protocol::ReqLogin(netid targetId, bool isBinary, const 
 }
 
 //------------------------------------------------------------------------
-// Protocol: AckVisualProgRun
+// Protocol: AckRunVisualProg
 //------------------------------------------------------------------------
-void visualprogram::r2s_Protocol::AckVisualProgRun(netid targetId, bool isBinary, const int &result)
+void visualprogram::r2s_Protocol::AckRunVisualProg(netid targetId, bool isBinary, const int &result)
 {
 	cPacket packet(m_node->GetPacketHeader());
 	packet.SetProtocolId( GetId() );
-	packet.SetPacketId( 1923274341 );
+	packet.SetPacketId( 3863877132 );
+	packet.SetPacketOption(0x01, (uint)isBinary);
+	if (isBinary)
+	{
+		// marshaling binary
+		marshalling::operator<<(packet, result);
+		packet.EndPack();
+		GetNode()->Send(targetId, packet);
+	}
+	else
+	{
+		// marshaling json
+		using boost::property_tree::ptree;
+		ptree props;
+		try {
+			put(props, "result", result);
+			stringstream ss;
+			boost::property_tree::write_json(ss, props);
+			packet << ss.str();
+			packet.EndPack();
+			GetNode()->Send(targetId, packet);
+		} catch (...) {
+			dbg::Logp("json packet maker error\n");
+		}
+	}
+}
+
+//------------------------------------------------------------------------
+// Protocol: AckStopVisualProg
+//------------------------------------------------------------------------
+void visualprogram::r2s_Protocol::AckStopVisualProg(netid targetId, bool isBinary, const int &result)
+{
+	cPacket packet(m_node->GetPacketHeader());
+	packet.SetProtocolId( GetId() );
+	packet.SetPacketId( 1895439953 );
 	packet.SetPacketOption(0x01, (uint)isBinary);
 	if (isBinary)
 	{

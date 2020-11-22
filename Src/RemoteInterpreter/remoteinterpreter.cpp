@@ -161,7 +161,7 @@ bool cRemoteInterpreter::WriteVisProgFile(const StrPath &fileName
 // receive from webserver
 bool cRemoteInterpreter::Welcome(visualprogram::Welcome_Packet &packet)
 {
-	m_protocol.ReqLogin(network2::SERVER_NETID, false, "InterpreterServer");
+	m_protocol.ReqLogin(network2::SERVER_NETID, false, "RemoteInterpreter");
 	return true;
 }
 
@@ -172,60 +172,42 @@ bool cRemoteInterpreter::AckLogin(visualprogram::AckLogin_Packet &packet)
 }
 
 
-bool cRemoteInterpreter::ReqVisualProgRun(visualprogram::ReqVisualProgRun_Packet &packet)
+bool cRemoteInterpreter::ReqRunVisualProg(visualprogram::ReqRunVisualProg_Packet &packet)
 { 
 	// nodeFile convert to visual programming file *.vprog
-	WriteVisProgFile("test.vprog", packet.nodeFile);
+	WriteVisProgFile("simulation.vprog", packet.nodeFile);
 
 	// generate intermediate code and write file
 	vprog::cVProgFile vprogFile;
 	common::script::cIntermediateCode icode;
 
-	if (!vprogFile.Read("test.vprog"))
+	if (!vprogFile.Read("simulation.vprog"))
 		goto $error;
 
 	vprogFile.GenerateIntermediateCode(icode);
-	if (!icode.Write("test.icode"))
+	if (!icode.Write("simulation.icode"))
 		goto $error;
 
-	if (!m_remoteDebugger.LoadIntermediateCode("test.icode"))
+	if (!m_remoteDebugger.LoadIntermediateCode("simulation.icode"))
 		goto $error;
 
-	//// send icode to webserver
-	//m_protocol.AckRun(network2::SERVER_NETID, true, 1, icode);
-
-	//m_interpreter.Init("test.icode", this, this);
-	//m_interpreter.Run();
-	//script::cEvent evt("Tick Event");
-	//m_interpreter.PushEvent(evt);
-
-	//for (auto &vm : m_interpreter.m_vms)
-	//{
-	//	webvprog::sRegister reg;
-	//	reg.idx = vm->m_reg.idx;
-	//	reg.cmp = vm->m_reg.cmp;
-	//	for (uint i = 0; i < ARRAYSIZE(vm->m_reg.val); ++i)
-	//		reg.val[i] = common::copyvariant(vm->m_reg.val[i]);
-	//	m_protocol.SyncRegister(network2::SERVER_NETID, true, 0, reg);
-	//	break;
-	//}
-	m_protocol.AckVisualProgRun(network2::SERVER_NETID, false, 1);
+	m_protocol.AckRunVisualProg(network2::SERVER_NETID, false, 1);
 	return true;
 
 
 $error:
-	m_protocol.AckVisualProgRun(network2::SERVER_NETID, false, 0);
+	m_protocol.AckRunVisualProg(network2::SERVER_NETID, false, 0);
 	return true; 
 }
 
 
-//// ReqEvent packet handling
-//bool cRemoteInterpreter::ReqEvent(visualprogram::ReqEvent_Packet &packet) 
-//{
-//	//script::cEvent evt(packet.eventName);
-//	//m_interpreter.PushEvent(evt);
-//	return true; 
-//}
+// stop visual program interpreter
+bool cRemoteInterpreter::ReqStopVisualProg(visualprogram::ReqStopVisualProg_Packet &packet)
+{
+	m_remoteDebugger.Stop();
+	m_protocol.AckStopVisualProg(network2::SERVER_NETID, false, 1);
+	return true; 
+}
 
 
 // cInterpreter::iFunctionCallback overriding
@@ -234,6 +216,12 @@ int cRemoteInterpreter::Function(script::cSymbolTable &symbolTable
 	, const string &funcName
 	, void *arg)
 {
+	if (funcName == "Console")
+	{
+		const string str = symbolTable.Get<string>(scopeName, "string");
+		m_remoteDebugger.m_protocol.SyncVMOutput(network2::SERVER_NETID
+			, true, 0, str);
+	}
 
 	return 0;
 }
