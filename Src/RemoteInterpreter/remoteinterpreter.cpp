@@ -80,6 +80,7 @@ bool cRemoteInterpreter::WriteVisProgFile(const StrPath &fileName
 		ofs << tab << "type " << vprog::eNodeType::ToString(node.nodeType) << endl;
 		ofs << tab << "id " << node.id << endl;
 		ofs << tab << "name \"" << node.name << "\"" << endl;
+		ofs << tab << "desc \"" << node.desc << "\"" << endl;
 		ofs << tab << "rect 0 0 100 100" << endl;
 		ofs << tab << "color 1 1 1 1" << endl;
 

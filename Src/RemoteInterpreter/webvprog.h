@@ -87,6 +87,7 @@ namespace webvprog
 		int id;
 		vprog::eNodeType::Enum nodeType;
 		string name;
+		string desc;
 		string varName; // if variable node, variable symbol name
 		vector<sSlot> inputs;
 		vector<sSlot> outputs;

@@ -206,6 +206,8 @@ namespace network2 {
 			rhs.nodeType = (vprog::eNodeType::Enum) nodeType;
 			packet >> rhs.name;
 			packet.Read4ByteAlign(); // after string parsing
+			packet >> rhs.desc;
+			packet.Read4ByteAlign(); // after string parsing
 			MARSHALLING_BIN_GET_SEQ(packet, vector<webvprog::sSlot>, rhs.inputs);
 			MARSHALLING_BIN_GET_SEQ(packet, vector<webvprog::sSlot>, rhs.outputs);
 
