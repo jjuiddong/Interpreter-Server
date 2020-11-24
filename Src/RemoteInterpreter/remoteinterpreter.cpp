@@ -89,8 +89,21 @@ bool cRemoteInterpreter::WriteVisProgFile(const StrPath &fileName
 		{
 			ofs << tab << "input" << endl;
 			tab = "\t\t";
-			ofs << tab << "type " << vprog::ePinType::ToString(slot.type) << endl;
-			//ofs << tab << "kind " << vprog::ePinKind::ToString(slot.kind) << endl;
+
+			// switch node?, enum input?, in slot?
+			if ((node.name == "Switch") 
+				&& !node.desc.empty() 
+				&& (slot.name == "in")
+				&& (slot.type == vprog::ePinType::Int))
+			{
+				// write input selection node type string
+				ofs << tab << "type " << node.desc << endl;
+			}
+			else
+			{
+				ofs << tab << "type " << vprog::ePinType::ToString(slot.type) << endl;
+			}
+
 			ofs << tab << "id " << slot.id << endl;
 			ofs << tab << "name \"" << slot.name << "\"" << endl;
 
