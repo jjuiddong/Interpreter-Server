@@ -205,7 +205,11 @@ bool cRemoteInterpreter::ReqRunVisualProg(visualprogram::ReqRunVisualProg_Packet
 	if (!m_remoteDebugger.LoadIntermediateCode("simulation.icode"))
 		goto $error;
 
+	if (!m_remoteDebugger.Run())
+		goto $error;
+
 	m_protocol.AckRunVisualProg(network2::SERVER_NETID, false, 1);
+	m_remoteDebugger.m_protocol.AckRun(network2::SERVER_NETID, false, 1);
 	return true;
 
 
