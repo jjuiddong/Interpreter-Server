@@ -159,7 +159,7 @@ bool cRemoteInterpreter::WriteVisProgFile(const StrPath &fileName
 		{
 			ofs << "initvar" << endl;
 			tab = "\t";
-			ofs << tab << "scopename " << symbol.name << endl;
+			ofs << tab << "scopename \"" << symbol.name << "\"" << endl;
 			ofs << tab << "name " << "out" << endl;
 			string valueStr = common::variant2str(symbol.val);
 			ofs << tab << "value \"" << valueStr << "\"" << endl;
