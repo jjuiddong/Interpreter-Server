@@ -159,8 +159,19 @@ bool cRemoteInterpreter::WriteVisProgFile(const StrPath &fileName
 		{
 			ofs << "initvar" << endl;
 			tab = "\t";
-			ofs << tab << "scopename \"" << symbol.name << "\"" << endl;
-			ofs << tab << "name " << "out" << endl;
+
+			vector<string> toks;
+			common::tokenizer(symbol.name, "-", "", toks);
+			if (toks.size() >= 3) 
+			{
+				ofs << tab << "scopename \"" << toks[0] << "-" << toks[1] << "\"" << endl;
+				ofs << tab << "name \"" << toks[2] << "\"" << endl;
+			}
+			else
+			{
+				ofs << tab << "scopename \"" << symbol.name << "\"" << endl;
+				ofs << tab << "name " << "out" << endl;
+			}
 			string valueStr = common::variant2str(symbol.val);
 			ofs << tab << "value \"" << valueStr << "\"" << endl;
 			ofs << tab << "type " << vprog::eSymbolType::ToString(symbol.stype) << endl;
