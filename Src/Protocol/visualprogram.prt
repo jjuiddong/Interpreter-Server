@@ -8,7 +8,8 @@
 //
 // web browser -> webserver
 //	ReqLogin(string id); json
-//	ReqVisualProgRun(string nodeFileName); json
+//	ReqRunVisualProg(string nodeFileName); json
+//	ReqRunVisualProgStream(string nodeFileName); json
 //	ReqEvent(string eventName);
 //
 
@@ -18,7 +19,8 @@ protocol s2r 1000 json
 {
 	Welcome(string msg);
 	AckLogin(string id, int result);
-	ReqRunVisualProg(webvprog::sNodeFile nodeFile);
+	ReqRunVisualProg(uint count, uint index, uint state, webvprog::sNodeFile nodeFile);
+	ReqRunVisualProgStream(uint count, uint index, vector<BYTE> data);
 	ReqStopVisualProg();
 }
 
@@ -28,5 +30,6 @@ protocol r2s 2000 json
 {
 	ReqLogin(string id);
 	AckRunVisualProg(int result);
+	AckRunVisualProgStream(int result);
 	AckStopVisualProg(int result);
 }

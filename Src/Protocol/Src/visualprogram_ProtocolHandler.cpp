@@ -124,6 +124,9 @@ bool visualprogram::s2r_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 				ReqRunVisualProg_Packet data;
 				data.pdispatcher = this;
 				data.senderId = packet.GetSenderId();
+				marshalling::operator>>(packet, data.count);
+				marshalling::operator>>(packet, data.index);
+				marshalling::operator>>(packet, data.state);
 				marshalling::operator>>(packet, data.nodeFile);
 				SEND_HANDLER(s2r_ProtocolHandler, prtHandler, ReqRunVisualProg(data));
 			}
@@ -144,8 +147,59 @@ bool visualprogram::s2r_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 					ReqRunVisualProg_Packet data;
 					data.pdispatcher = this;
 					data.senderId = packet.GetSenderId();
+					get(props, "count", data.count);
+					get(props, "index", data.index);
+					get(props, "state", data.state);
 					get(props, "nodeFile", data.nodeFile);
 					SEND_HANDLER(s2r_ProtocolHandler, prtHandler, ReqRunVisualProg(data));
+				} catch (...) {
+					dbg::Logp("json packet parsing error\n");
+				}
+			}
+		}
+		break;
+
+	case 3686541167:
+		{
+			ProtocolHandlers prtHandler;
+			if (!HandlerMatching<s2r_ProtocolHandler>(handlers, prtHandler))
+				return false;
+
+			SetCurrentDispatchPacket( &packet );
+
+			const bool isBinary = packet.GetPacketOption(0x01) > 0;
+			if (isBinary)
+			{
+				// binary parsing
+				ReqRunVisualProgStream_Packet data;
+				data.pdispatcher = this;
+				data.senderId = packet.GetSenderId();
+				marshalling::operator>>(packet, data.count);
+				marshalling::operator>>(packet, data.index);
+				marshalling::operator>>(packet, data.data);
+				SEND_HANDLER(s2r_ProtocolHandler, prtHandler, ReqRunVisualProgStream(data));
+			}
+			else
+			{
+				// json format packet parsing using property_tree
+				using boost::property_tree::ptree;
+				ptree root;
+
+				try {
+					string str;
+					packet >> str;
+					stringstream ss(str);
+					
+					boost::property_tree::read_json(ss, root);
+					ptree &props = root.get_child("");
+
+					ReqRunVisualProgStream_Packet data;
+					data.pdispatcher = this;
+					data.senderId = packet.GetSenderId();
+					get(props, "count", data.count);
+					get(props, "index", data.index);
+					get(props, "data", data.data);
+					SEND_HANDLER(s2r_ProtocolHandler, prtHandler, ReqRunVisualProgStream(data));
 				} catch (...) {
 					dbg::Logp("json packet parsing error\n");
 				}
@@ -301,6 +355,50 @@ bool visualprogram::r2s_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 					data.senderId = packet.GetSenderId();
 					get(props, "result", data.result);
 					SEND_HANDLER(r2s_ProtocolHandler, prtHandler, AckRunVisualProg(data));
+				} catch (...) {
+					dbg::Logp("json packet parsing error\n");
+				}
+			}
+		}
+		break;
+
+	case 3454830338:
+		{
+			ProtocolHandlers prtHandler;
+			if (!HandlerMatching<r2s_ProtocolHandler>(handlers, prtHandler))
+				return false;
+
+			SetCurrentDispatchPacket( &packet );
+
+			const bool isBinary = packet.GetPacketOption(0x01) > 0;
+			if (isBinary)
+			{
+				// binary parsing
+				AckRunVisualProgStream_Packet data;
+				data.pdispatcher = this;
+				data.senderId = packet.GetSenderId();
+				marshalling::operator>>(packet, data.result);
+				SEND_HANDLER(r2s_ProtocolHandler, prtHandler, AckRunVisualProgStream(data));
+			}
+			else
+			{
+				// json format packet parsing using property_tree
+				using boost::property_tree::ptree;
+				ptree root;
+
+				try {
+					string str;
+					packet >> str;
+					stringstream ss(str);
+					
+					boost::property_tree::read_json(ss, root);
+					ptree &props = root.get_child("");
+
+					AckRunVisualProgStream_Packet data;
+					data.pdispatcher = this;
+					data.senderId = packet.GetSenderId();
+					get(props, "result", data.result);
+					SEND_HANDLER(r2s_ProtocolHandler, prtHandler, AckRunVisualProgStream(data));
 				} catch (...) {
 					dbg::Logp("json packet parsing error\n");
 				}

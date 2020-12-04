@@ -34,8 +34,10 @@ protected:
 	virtual bool AckLogin(visualprogram::AckLogin_Packet &packet) override;
 	virtual bool ReqRunVisualProg(visualprogram::ReqRunVisualProg_Packet &packet) override;
 	virtual bool ReqStopVisualProg(visualprogram::ReqStopVisualProg_Packet &packet) override;
+	virtual bool ReqRunVisualProgStream(visualprogram::ReqRunVisualProgStream_Packet &packet) override;
 
 public:
 	network2::cRemoteDebugger2 m_remoteDebugger;
 	visualprogram::r2s_Protocol m_protocol;
+	vector<BYTE> m_nodeFileStream;
 };

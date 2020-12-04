@@ -27,7 +27,18 @@ using namespace marshalling_json;
 	struct ReqRunVisualProg_Packet {
 		cProtocolDispatcher *pdispatcher;
 		netid senderId;
+		uint count;
+		uint index;
+		uint state;
 		webvprog::sNodeFile nodeFile;
+	};
+
+	struct ReqRunVisualProgStream_Packet {
+		cProtocolDispatcher *pdispatcher;
+		netid senderId;
+		uint count;
+		uint index;
+		vector<BYTE> data;
 	};
 
 	struct ReqStopVisualProg_Packet {
@@ -46,6 +57,12 @@ using namespace marshalling_json;
 	};
 
 	struct AckRunVisualProg_Packet {
+		cProtocolDispatcher *pdispatcher;
+		netid senderId;
+		int result;
+	};
+
+	struct AckRunVisualProgStream_Packet {
 		cProtocolDispatcher *pdispatcher;
 		netid senderId;
 		int result;

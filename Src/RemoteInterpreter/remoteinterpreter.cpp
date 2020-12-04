@@ -28,6 +28,7 @@ bool cRemoteInterpreter::Init(const string &url, const int port)
 		return false;
 	}
 
+	m_nodeFileStream.reserve(1024 * 10);
 	return true;
 }
 
@@ -197,6 +198,7 @@ bool cRemoteInterpreter::AckLogin(visualprogram::AckLogin_Packet &packet)
 }
 
 
+// receive visual programming node file
 bool cRemoteInterpreter::ReqRunVisualProg(visualprogram::ReqRunVisualProg_Packet &packet)
 { 
 	// nodeFile convert to visual programming file *.vprog
@@ -227,6 +229,64 @@ bool cRemoteInterpreter::ReqRunVisualProg(visualprogram::ReqRunVisualProg_Packet
 $error:
 	m_protocol.AckRunVisualProg(network2::SERVER_NETID, false, 0);
 	return true; 
+}
+
+
+// receive visual programming node file as byte stream
+bool cRemoteInterpreter::ReqRunVisualProgStream(visualprogram::ReqRunVisualProgStream_Packet &packet) 
+{
+	// initialize byte stream
+	if (packet.index == 0)
+		m_nodeFileStream.clear();
+
+	// copy stream
+	std::copy(packet.data.begin(), packet.data.end(),
+		std::back_inserter(m_nodeFileStream));
+
+	// finish streaming?
+	if (packet.index + 1 == packet.count)
+	{
+		// marshalling nodefile
+		// tricky code, packet buffer pointer change
+		network2::cPacket packet(m_remoteDebugger.m_client.GetPacketHeader());
+		packet.m_data = (BYTE*)&m_nodeFileStream[0];
+		packet.m_bufferSize = (int)m_nodeFileStream.size();
+		packet.m_readIdx = 0; // no header data
+
+		// binary marshalling
+		webvprog::sNodeFile nodeFile;
+		network2::marshalling::operator>>(packet, nodeFile);
+
+		// nodeFile convert to visual programming file *.vprog
+		WriteVisProgFile("simulation.vprog", nodeFile);
+
+		// generate intermediate code and write file
+		vprog::cVProgFile vprogFile;
+		common::script::cIntermediateCode icode;
+
+		if (!vprogFile.Read("simulation.vprog"))
+			goto $error;
+
+		vprogFile.GenerateIntermediateCode(icode);
+		if (!icode.Write("simulation.icode"))
+			goto $error;
+
+		if (!m_remoteDebugger.LoadIntermediateCode("simulation.icode"))
+			goto $error;
+
+		if (!m_remoteDebugger.Run())
+			goto $error;
+
+		m_protocol.AckRunVisualProgStream(network2::SERVER_NETID, false, 1);
+		m_remoteDebugger.m_protocol.AckRun(network2::SERVER_NETID, false, 1);
+		return true;
+
+
+	$error:
+		m_protocol.AckRunVisualProgStream(network2::SERVER_NETID, false, 0);
+	}
+
+	return true;
 }
 
 

@@ -33,6 +33,7 @@ public:
 	virtual bool Welcome(visualprogram::Welcome_Packet &packet) { return true; }
 	virtual bool AckLogin(visualprogram::AckLogin_Packet &packet) { return true; }
 	virtual bool ReqRunVisualProg(visualprogram::ReqRunVisualProg_Packet &packet) { return true; }
+	virtual bool ReqRunVisualProgStream(visualprogram::ReqRunVisualProgStream_Packet &packet) { return true; }
 	virtual bool ReqStopVisualProg(visualprogram::ReqStopVisualProg_Packet &packet) { return true; }
 };
 
@@ -58,6 +59,7 @@ public:
 	r2s_ProtocolHandler() { m_format = ePacketFormat::JSON; }
 	virtual bool ReqLogin(visualprogram::ReqLogin_Packet &packet) { return true; }
 	virtual bool AckRunVisualProg(visualprogram::AckRunVisualProg_Packet &packet) { return true; }
+	virtual bool AckRunVisualProgStream(visualprogram::AckRunVisualProgStream_Packet &packet) { return true; }
 	virtual bool AckStopVisualProg(visualprogram::AckStopVisualProg_Packet &packet) { return true; }
 };
 
