@@ -248,14 +248,14 @@ bool cRemoteInterpreter::ReqRunVisualProgStream(visualprogram::ReqRunVisualProgS
 	{
 		// marshalling nodefile
 		// tricky code, packet buffer pointer change
-		network2::cPacket packet(m_remoteDebugger.m_client.GetPacketHeader());
-		packet.m_data = (BYTE*)&m_nodeFileStream[0];
-		packet.m_bufferSize = (int)m_nodeFileStream.size();
-		packet.m_readIdx = 0; // no header data
+		network2::cPacket marsh(m_remoteDebugger.m_client.GetPacketHeader());
+		marsh.m_data = (BYTE*)&m_nodeFileStream[0];
+		marsh.m_bufferSize = (int)m_nodeFileStream.size();
+		marsh.m_readIdx = 0; // no header data
 
 		// binary marshalling
 		webvprog::sNodeFile nodeFile;
-		network2::marshalling::operator>>(packet, nodeFile);
+		network2::marshalling::operator>>(marsh, nodeFile);
 
 		// nodeFile convert to visual programming file *.vprog
 		WriteVisProgFile("simulation.vprog", nodeFile);
@@ -285,7 +285,6 @@ bool cRemoteInterpreter::ReqRunVisualProgStream(visualprogram::ReqRunVisualProgS
 	$error:
 		m_protocol.AckRunVisualProgStream(network2::SERVER_NETID, false, 0);
 	}
-
 	return true;
 }
 

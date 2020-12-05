@@ -124,9 +124,6 @@ bool visualprogram::s2r_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 				ReqRunVisualProg_Packet data;
 				data.pdispatcher = this;
 				data.senderId = packet.GetSenderId();
-				marshalling::operator>>(packet, data.count);
-				marshalling::operator>>(packet, data.index);
-				marshalling::operator>>(packet, data.state);
 				marshalling::operator>>(packet, data.nodeFile);
 				SEND_HANDLER(s2r_ProtocolHandler, prtHandler, ReqRunVisualProg(data));
 			}
@@ -147,9 +144,6 @@ bool visualprogram::s2r_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 					ReqRunVisualProg_Packet data;
 					data.pdispatcher = this;
 					data.senderId = packet.GetSenderId();
-					get(props, "count", data.count);
-					get(props, "index", data.index);
-					get(props, "state", data.state);
 					get(props, "nodeFile", data.nodeFile);
 					SEND_HANDLER(s2r_ProtocolHandler, prtHandler, ReqRunVisualProg(data));
 				} catch (...) {

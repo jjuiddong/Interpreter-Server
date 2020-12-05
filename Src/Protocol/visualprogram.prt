@@ -19,7 +19,7 @@ protocol s2r 1000 json
 {
 	Welcome(string msg);
 	AckLogin(string id, int result);
-	ReqRunVisualProg(uint count, uint index, uint state, webvprog::sNodeFile nodeFile);
+	ReqRunVisualProg(webvprog::sNodeFile nodeFile);
 	ReqRunVisualProgStream(uint count, uint index, vector<BYTE> data);
 	ReqStopVisualProg();
 }

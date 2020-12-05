@@ -17,7 +17,7 @@ public:
 	s2r_Protocol() : iProtocol(s2r_Protocol_ID, ePacketFormat::JSON) {}
 	void Welcome(netid targetId, bool isBinary, const string &msg);
 	void AckLogin(netid targetId, bool isBinary, const string &id, const int &result);
-	void ReqRunVisualProg(netid targetId, bool isBinary, const uint &count, const uint &index, const uint &state, const webvprog::sNodeFile &nodeFile);
+	void ReqRunVisualProg(netid targetId, bool isBinary, const webvprog::sNodeFile &nodeFile);
 	void ReqRunVisualProgStream(netid targetId, bool isBinary, const uint &count, const uint &index, const vector<BYTE> &data);
 	void ReqStopVisualProg(netid targetId, bool isBinary);
 };

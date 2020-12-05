@@ -27,9 +27,6 @@ using namespace marshalling_json;
 	struct ReqRunVisualProg_Packet {
 		cProtocolDispatcher *pdispatcher;
 		netid senderId;
-		uint count;
-		uint index;
-		uint state;
 		webvprog::sNodeFile nodeFile;
 	};
 
