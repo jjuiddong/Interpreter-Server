@@ -117,7 +117,7 @@ bool cRemoteInterpreter::WriteVisProgFile(const StrPath &fileName
 			{
 				ofs << tab << "links ";
 				for (auto to : links)
-					ofs << to;
+					ofs << to << " ";
 				ofs << endl;
 			}
 			tab = "\t";
