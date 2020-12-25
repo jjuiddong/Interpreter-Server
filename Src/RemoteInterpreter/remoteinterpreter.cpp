@@ -16,14 +16,15 @@ cRemoteInterpreter::~cRemoteInterpreter()
 // initialize interpreter server
 // url: interpreter web server url
 // port: interpreter web server port
-bool cRemoteInterpreter::Init(const string &url, const int port)
+bool cRemoteInterpreter::Init(network2::cNetController &netController
+	, const string &url, const int port)
 {
 	Clear();
 
 	m_remoteDebugger.m_client.AddProtocolHandler(this);
 	m_remoteDebugger.m_client.RegisterProtocol(&m_protocol);
 
-	if (!m_remoteDebugger.InitHost(url, port, this, this))
+	if (!m_remoteDebugger.InitHost(netController, url, port, this, this))
 	{
 		return false;
 	}
@@ -34,9 +35,9 @@ bool cRemoteInterpreter::Init(const string &url, const int port)
 
 
 // process
-bool cRemoteInterpreter::Update()
+bool cRemoteInterpreter::Update(const float deltaSeconds)
 {
-	const bool result = m_remoteDebugger.Process();
+	const bool result = m_remoteDebugger.Process(deltaSeconds);
 	return result;
 }
 

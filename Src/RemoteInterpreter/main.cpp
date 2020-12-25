@@ -41,8 +41,9 @@ int ThreadFunction()
 	const string url = "jjuiddong.iptime.org";
 	const int port = 4001;
 
+	network2::cNetController netController;
 	cRemoteInterpreter remoteInterpreter;
-	if (!remoteInterpreter.Init(url, port))
+	if (!remoteInterpreter.Init(netController, url, port))
 	{
 		cout << "Error RemoteInterpreter Initialize" << endl;
 		return 0;
@@ -50,13 +51,18 @@ int ThreadFunction()
 
 	cout << "Start Remote Interpreter" << endl;
 
+	cTimer timer;
+	timer.Create();
 	while (g_isLoop)
 	{
-		if (!remoteInterpreter.Update())
+		const float dt = (float)timer.GetDeltaSeconds();
+		netController.Process(dt);
+		if (!remoteInterpreter.Update(dt))
 			break;
 		Sleep(1);
 	}
 
+	netController.Clear();
 	dbg::TerminateLogThread();
 	return 1;
 }

@@ -15,8 +15,9 @@ public:
 	cRemoteInterpreter();
 	virtual ~cRemoteInterpreter();
 
-	bool Init(const string &url, const int port);
-	bool Update();
+	bool Init(network2::cNetController &netController
+		, const string &url, const int port);
+	bool Update(const float deltaSeconds);
 	void Clear();
 
 
