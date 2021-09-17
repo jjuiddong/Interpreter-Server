@@ -20,6 +20,7 @@ public:
 	s2r_Dispatcher();
 protected:
 	virtual bool Dispatch(cPacket &packet, const ProtocolHandlers &handlers) override;
+	static cPacketHeaderJson s_packetHeader;
 };
 static s2r_Dispatcher g_visualprogram_s2r_Dispatcher;
 
@@ -47,6 +48,7 @@ public:
 	r2s_Dispatcher();
 protected:
 	virtual bool Dispatch(cPacket &packet, const ProtocolHandlers &handlers) override;
+	static cPacketHeaderJson s_packetHeader;
 };
 static r2s_Dispatcher g_visualprogram_r2s_Dispatcher;
 

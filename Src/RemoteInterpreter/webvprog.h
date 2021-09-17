@@ -37,7 +37,7 @@ namespace webvprog
 
 	// symbol table symbol information
 	struct sSymbol {
-		vprog::eSymbolType::Enum stype;
+		script::eSymbolType::Enum stype;
 		string name;
 		_variant_t val;
 		vector<string> values;
@@ -71,8 +71,8 @@ namespace webvprog
 		int id;
 		string name;
 		string varName; // variable slot? variable symbol name
-		vprog::ePinKind::Enum kind;
-		vprog::ePinType::Enum type;
+		vpl::ePinKind::Enum kind;
+		vpl::ePinType::Enum type;
 	};
 
 	// node link
@@ -85,7 +85,7 @@ namespace webvprog
 	// visual program node
 	struct sNode {
 		int id;
-		vprog::eNodeType::Enum nodeType;
+		vpl::eNodeType::Enum nodeType;
 		string name;
 		string desc;
 		string varName; // if variable node, variable symbol name

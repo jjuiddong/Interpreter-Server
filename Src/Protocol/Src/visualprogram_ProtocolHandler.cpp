@@ -4,10 +4,12 @@
 using namespace visualprogram;
 
 
+cPacketHeaderJson visualprogram::s2r_Dispatcher::s_packetHeader;
 visualprogram::s2r_Dispatcher::s2r_Dispatcher()
 	: cProtocolDispatcher(visualprogram::s2r_Dispatcher_ID, ePacketFormat::JSON)
 {
-	cProtocolDispatcher::GetDispatcherMap()->insert({s2r_Dispatcher_ID, this });
+	cProtocolDispatcher::GetDispatcherMap()->insert({s2r_Dispatcher_ID, this});
+	cProtocolDispatcher::GetPacketHeaderMap()->insert({s2r_Dispatcher_ID, &s_packetHeader});
 }
 
 //------------------------------------------------------------------------
@@ -19,7 +21,7 @@ bool visualprogram::s2r_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 	const int packetId = packet.GetPacketId();
 	switch (packetId)
 	{
-	case 1281093745:
+	case 1281093745: // Welcome
 		{
 			ProtocolHandlers prtHandler;
 			if (!HandlerMatching<s2r_ProtocolHandler>(handlers, prtHandler))
@@ -34,6 +36,7 @@ bool visualprogram::s2r_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 				Welcome_Packet data;
 				data.pdispatcher = this;
 				data.senderId = packet.GetSenderId();
+				packet.Alignment4(); // set 4byte alignment
 				marshalling::operator>>(packet, data.msg);
 				SEND_HANDLER(s2r_ProtocolHandler, prtHandler, Welcome(data));
 			}
@@ -57,13 +60,13 @@ bool visualprogram::s2r_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 					get(props, "msg", data.msg);
 					SEND_HANDLER(s2r_ProtocolHandler, prtHandler, Welcome(data));
 				} catch (...) {
-					dbg::Logp("json packet parsing error\n");
+					dbg::Logp("json packet parsing error packetid = %lu\n", packetId);
 				}
 			}
 		}
 		break;
 
-	case 851424104:
+	case 851424104: // AckLogin
 		{
 			ProtocolHandlers prtHandler;
 			if (!HandlerMatching<s2r_ProtocolHandler>(handlers, prtHandler))
@@ -78,6 +81,7 @@ bool visualprogram::s2r_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 				AckLogin_Packet data;
 				data.pdispatcher = this;
 				data.senderId = packet.GetSenderId();
+				packet.Alignment4(); // set 4byte alignment
 				marshalling::operator>>(packet, data.id);
 				marshalling::operator>>(packet, data.result);
 				SEND_HANDLER(s2r_ProtocolHandler, prtHandler, AckLogin(data));
@@ -103,13 +107,13 @@ bool visualprogram::s2r_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 					get(props, "result", data.result);
 					SEND_HANDLER(s2r_ProtocolHandler, prtHandler, AckLogin(data));
 				} catch (...) {
-					dbg::Logp("json packet parsing error\n");
+					dbg::Logp("json packet parsing error packetid = %lu\n", packetId);
 				}
 			}
 		}
 		break;
 
-	case 2250021743:
+	case 2250021743: // ReqRunVisualProg
 		{
 			ProtocolHandlers prtHandler;
 			if (!HandlerMatching<s2r_ProtocolHandler>(handlers, prtHandler))
@@ -124,6 +128,7 @@ bool visualprogram::s2r_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 				ReqRunVisualProg_Packet data;
 				data.pdispatcher = this;
 				data.senderId = packet.GetSenderId();
+				packet.Alignment4(); // set 4byte alignment
 				marshalling::operator>>(packet, data.nodeFile);
 				SEND_HANDLER(s2r_ProtocolHandler, prtHandler, ReqRunVisualProg(data));
 			}
@@ -147,13 +152,13 @@ bool visualprogram::s2r_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 					get(props, "nodeFile", data.nodeFile);
 					SEND_HANDLER(s2r_ProtocolHandler, prtHandler, ReqRunVisualProg(data));
 				} catch (...) {
-					dbg::Logp("json packet parsing error\n");
+					dbg::Logp("json packet parsing error packetid = %lu\n", packetId);
 				}
 			}
 		}
 		break;
 
-	case 3686541167:
+	case 3686541167: // ReqRunVisualProgStream
 		{
 			ProtocolHandlers prtHandler;
 			if (!HandlerMatching<s2r_ProtocolHandler>(handlers, prtHandler))
@@ -168,6 +173,7 @@ bool visualprogram::s2r_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 				ReqRunVisualProgStream_Packet data;
 				data.pdispatcher = this;
 				data.senderId = packet.GetSenderId();
+				packet.Alignment4(); // set 4byte alignment
 				marshalling::operator>>(packet, data.count);
 				marshalling::operator>>(packet, data.index);
 				marshalling::operator>>(packet, data.data);
@@ -195,13 +201,13 @@ bool visualprogram::s2r_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 					get(props, "data", data.data);
 					SEND_HANDLER(s2r_ProtocolHandler, prtHandler, ReqRunVisualProgStream(data));
 				} catch (...) {
-					dbg::Logp("json packet parsing error\n");
+					dbg::Logp("json packet parsing error packetid = %lu\n", packetId);
 				}
 			}
 		}
 		break;
 
-	case 4258374867:
+	case 4258374867: // ReqStopVisualProg
 		{
 			ProtocolHandlers prtHandler;
 			if (!HandlerMatching<s2r_ProtocolHandler>(handlers, prtHandler))
@@ -216,6 +222,7 @@ bool visualprogram::s2r_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 				ReqStopVisualProg_Packet data;
 				data.pdispatcher = this;
 				data.senderId = packet.GetSenderId();
+				packet.Alignment4(); // set 4byte alignment
 				SEND_HANDLER(s2r_ProtocolHandler, prtHandler, ReqStopVisualProg(data));
 			}
 			else
@@ -237,7 +244,7 @@ bool visualprogram::s2r_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 					data.senderId = packet.GetSenderId();
 					SEND_HANDLER(s2r_ProtocolHandler, prtHandler, ReqStopVisualProg(data));
 				} catch (...) {
-					dbg::Logp("json packet parsing error\n");
+					dbg::Logp("json packet parsing error packetid = %lu\n", packetId);
 				}
 			}
 		}
@@ -253,10 +260,12 @@ bool visualprogram::s2r_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 
 
 
+cPacketHeaderJson visualprogram::r2s_Dispatcher::s_packetHeader;
 visualprogram::r2s_Dispatcher::r2s_Dispatcher()
 	: cProtocolDispatcher(visualprogram::r2s_Dispatcher_ID, ePacketFormat::JSON)
 {
-	cProtocolDispatcher::GetDispatcherMap()->insert({r2s_Dispatcher_ID, this });
+	cProtocolDispatcher::GetDispatcherMap()->insert({r2s_Dispatcher_ID, this});
+	cProtocolDispatcher::GetPacketHeaderMap()->insert({r2s_Dispatcher_ID, &s_packetHeader});
 }
 
 //------------------------------------------------------------------------
@@ -268,7 +277,7 @@ bool visualprogram::r2s_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 	const int packetId = packet.GetPacketId();
 	switch (packetId)
 	{
-	case 1956887904:
+	case 1956887904: // ReqLogin
 		{
 			ProtocolHandlers prtHandler;
 			if (!HandlerMatching<r2s_ProtocolHandler>(handlers, prtHandler))
@@ -283,6 +292,7 @@ bool visualprogram::r2s_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 				ReqLogin_Packet data;
 				data.pdispatcher = this;
 				data.senderId = packet.GetSenderId();
+				packet.Alignment4(); // set 4byte alignment
 				marshalling::operator>>(packet, data.id);
 				SEND_HANDLER(r2s_ProtocolHandler, prtHandler, ReqLogin(data));
 			}
@@ -306,13 +316,13 @@ bool visualprogram::r2s_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 					get(props, "id", data.id);
 					SEND_HANDLER(r2s_ProtocolHandler, prtHandler, ReqLogin(data));
 				} catch (...) {
-					dbg::Logp("json packet parsing error\n");
+					dbg::Logp("json packet parsing error packetid = %lu\n", packetId);
 				}
 			}
 		}
 		break;
 
-	case 3863877132:
+	case 3863877132: // AckRunVisualProg
 		{
 			ProtocolHandlers prtHandler;
 			if (!HandlerMatching<r2s_ProtocolHandler>(handlers, prtHandler))
@@ -327,6 +337,7 @@ bool visualprogram::r2s_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 				AckRunVisualProg_Packet data;
 				data.pdispatcher = this;
 				data.senderId = packet.GetSenderId();
+				packet.Alignment4(); // set 4byte alignment
 				marshalling::operator>>(packet, data.result);
 				SEND_HANDLER(r2s_ProtocolHandler, prtHandler, AckRunVisualProg(data));
 			}
@@ -350,13 +361,13 @@ bool visualprogram::r2s_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 					get(props, "result", data.result);
 					SEND_HANDLER(r2s_ProtocolHandler, prtHandler, AckRunVisualProg(data));
 				} catch (...) {
-					dbg::Logp("json packet parsing error\n");
+					dbg::Logp("json packet parsing error packetid = %lu\n", packetId);
 				}
 			}
 		}
 		break;
 
-	case 3454830338:
+	case 3454830338: // AckRunVisualProgStream
 		{
 			ProtocolHandlers prtHandler;
 			if (!HandlerMatching<r2s_ProtocolHandler>(handlers, prtHandler))
@@ -371,6 +382,7 @@ bool visualprogram::r2s_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 				AckRunVisualProgStream_Packet data;
 				data.pdispatcher = this;
 				data.senderId = packet.GetSenderId();
+				packet.Alignment4(); // set 4byte alignment
 				marshalling::operator>>(packet, data.result);
 				SEND_HANDLER(r2s_ProtocolHandler, prtHandler, AckRunVisualProgStream(data));
 			}
@@ -394,13 +406,13 @@ bool visualprogram::r2s_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 					get(props, "result", data.result);
 					SEND_HANDLER(r2s_ProtocolHandler, prtHandler, AckRunVisualProgStream(data));
 				} catch (...) {
-					dbg::Logp("json packet parsing error\n");
+					dbg::Logp("json packet parsing error packetid = %lu\n", packetId);
 				}
 			}
 		}
 		break;
 
-	case 1895439953:
+	case 1895439953: // AckStopVisualProg
 		{
 			ProtocolHandlers prtHandler;
 			if (!HandlerMatching<r2s_ProtocolHandler>(handlers, prtHandler))
@@ -415,6 +427,7 @@ bool visualprogram::r2s_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 				AckStopVisualProg_Packet data;
 				data.pdispatcher = this;
 				data.senderId = packet.GetSenderId();
+				packet.Alignment4(); // set 4byte alignment
 				marshalling::operator>>(packet, data.result);
 				SEND_HANDLER(r2s_ProtocolHandler, prtHandler, AckStopVisualProg(data));
 			}
@@ -438,7 +451,7 @@ bool visualprogram::r2s_Dispatcher::Dispatch(cPacket &packet, const ProtocolHand
 					get(props, "result", data.result);
 					SEND_HANDLER(r2s_ProtocolHandler, prtHandler, AckStopVisualProg(data));
 				} catch (...) {
-					dbg::Logp("json packet parsing error\n");
+					dbg::Logp("json packet parsing error packetid = %lu\n", packetId);
 				}
 			}
 		}

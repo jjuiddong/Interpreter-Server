@@ -1,0 +1,24 @@
+define
+	type Enum
+	name "Enum1"
+	attr
+		name "item1"
+		value 0
+	attr
+		name "item2"
+		value 1
+	attr
+		name "item3"
+		value 2
+define
+	type Enum
+	name "Enum2"
+	attr
+		name "item21"
+		value 0
+	attr
+		name "item22"
+		value 1
+	attr
+		name "item23"
+		value 2

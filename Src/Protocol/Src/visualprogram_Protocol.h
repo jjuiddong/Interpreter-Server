@@ -20,6 +20,7 @@ public:
 	void ReqRunVisualProg(netid targetId, bool isBinary, const webvprog::sNodeFile &nodeFile);
 	void ReqRunVisualProgStream(netid targetId, bool isBinary, const uint &count, const uint &index, const vector<BYTE> &data);
 	void ReqStopVisualProg(netid targetId, bool isBinary);
+	static cPacketHeaderJson s_packetHeader;
 };
 static const int r2s_Protocol_ID = 2000;
 
@@ -31,5 +32,6 @@ public:
 	void AckRunVisualProg(netid targetId, bool isBinary, const int &result);
 	void AckRunVisualProgStream(netid targetId, bool isBinary, const int &result);
 	void AckStopVisualProg(netid targetId, bool isBinary, const int &result);
+	static cPacketHeaderJson s_packetHeader;
 };
 }

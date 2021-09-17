@@ -4,6 +4,9 @@
 //	- visual program source download from webserver
 //	- run visual program with script interpreter
 //
+// 2021-09-17
+//	- refactoring, no compile error, but not execute
+//
 #pragma once
 
 
@@ -25,7 +28,7 @@ protected:
 	bool WriteVisProgFile(const StrPath &fileName, const webvprog::sNodeFile &nodeFile);
 
 	// interpreter function callback
-	virtual int Function(script::cSymbolTable &symbolTable
+	virtual script::eCallbackState Function(script::cVirtualMachine &vm
 		, const string &scopeName
 		, const string &funcName
 		, void *arg) override;

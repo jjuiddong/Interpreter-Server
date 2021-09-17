@@ -24,7 +24,9 @@ bool cRemoteInterpreter::Init(network2::cNetController &netController
 	m_remoteDebugger.m_client.AddProtocolHandler(this);
 	m_remoteDebugger.m_client.RegisterProtocol(&m_protocol);
 
-	if (!m_remoteDebugger.InitHost(netController, url, port, this, this))
+	stringstream ss;
+	ss << url << ":" << port;
+	if (!m_remoteDebugger.InitHost(netController, ss.str(), this, this))
 	{
 		return false;
 	}
@@ -58,7 +60,7 @@ bool cRemoteInterpreter::WriteVisProgFile(const StrPath &fileName
 	// symbol table, enum write
 	for (auto &symbol : nodeFile.symbolTable)
 	{
-		if (vprog::eSymbolType::Enums == symbol.stype)
+		if (script::eSymbolType::Enums == symbol.stype)
 		{
 			ofs << "define" << endl;
 			tab = "\t";
@@ -79,7 +81,7 @@ bool cRemoteInterpreter::WriteVisProgFile(const StrPath &fileName
 	{
 		ofs << "node\n";
 
-		ofs << tab << "type " << vprog::eNodeType::ToString(node.nodeType) << endl;
+		ofs << tab << "type " << vpl::eNodeType::ToString(node.nodeType) << endl;
 		ofs << tab << "id " << node.id << endl;
 		ofs << tab << "name \"" << node.name << "\"" << endl;
 		ofs << tab << "desc \"" << node.desc << "\"" << endl;
@@ -96,14 +98,14 @@ bool cRemoteInterpreter::WriteVisProgFile(const StrPath &fileName
 			if ((node.name == "Switch") 
 				&& !node.desc.empty() 
 				&& (slot.name == "in")
-				&& (slot.type == vprog::ePinType::Int))
+				&& (slot.type == vpl::ePinType::Int))
 			{
 				// write input selection node type string
 				ofs << tab << "type " << node.desc << endl;
 			}
 			else
 			{
-				ofs << tab << "type " << vprog::ePinType::ToString(slot.type) << endl;
+				ofs << tab << "type " << vpl::ePinType::ToString(slot.type) << endl;
 			}
 
 			ofs << tab << "id " << slot.id << endl;
@@ -129,8 +131,8 @@ bool cRemoteInterpreter::WriteVisProgFile(const StrPath &fileName
 		{
 			ofs << tab << "output" << endl;
 			tab = "\t\t";
-			ofs << tab << "type " << vprog::ePinType::ToString(slot.type) << endl;
-			//ofs << tab << "kind " << vprog::ePinKind::ToString(slot.kind) << endl;
+			ofs << tab << "type " << vpl::ePinType::ToString(slot.type) << endl;
+			//ofs << tab << "kind " << vpl::ePinKind::ToString(slot.kind) << endl;
 			ofs << tab << "id " << slot.id << endl;
 			ofs << tab << "name \"" << slot.name << "\"" << endl;
 
@@ -157,7 +159,7 @@ bool cRemoteInterpreter::WriteVisProgFile(const StrPath &fileName
 	// symbol table, variable write
 	for (auto &symbol : nodeFile.symbolTable)
 	{
-		if (vprog::IsVariable(symbol.stype))
+		if (script::IsVariable(symbol.stype))
 		{
 			ofs << "initvar" << endl;
 			tab = "\t";
@@ -176,7 +178,7 @@ bool cRemoteInterpreter::WriteVisProgFile(const StrPath &fileName
 			}
 			string valueStr = common::variant2str(symbol.val);
 			ofs << tab << "value \"" << valueStr << "\"" << endl;
-			ofs << tab << "type " << vprog::eSymbolType::ToString(symbol.stype) << endl;
+			ofs << tab << "type " << script::eSymbolType::ToString(symbol.stype) << endl;
 			tab = "\t";
 		}
 	}
@@ -206,24 +208,24 @@ bool cRemoteInterpreter::ReqRunVisualProg(visualprogram::ReqRunVisualProg_Packet
 	WriteVisProgFile("simulation.vprog", packet.nodeFile);
 
 	// generate intermediate code and write file
-	vprog::cVProgFile vprogFile;
+	vpl::cVplFile vplFile;
 	common::script::cIntermediateCode icode;
 
-	if (!vprogFile.Read("simulation.vprog"))
+	if (!vplFile.Read("simulation.vprog"))
 		goto $error;
 
-	vprogFile.GenerateIntermediateCode(icode);
+	vplFile.GenerateIntermediateCode(icode);
 	if (!icode.Write("simulation.icode"))
 		goto $error;
 
 	if (!m_remoteDebugger.LoadIntermediateCode("simulation.icode"))
 		goto $error;
 
-	if (!m_remoteDebugger.Run())
+	if (!m_remoteDebugger.Run(0))
 		goto $error;
 
 	m_protocol.AckRunVisualProg(network2::SERVER_NETID, false, 1);
-	m_remoteDebugger.m_protocol.AckRun(network2::SERVER_NETID, false, 1);
+	m_remoteDebugger.m_protocol.AckRun(network2::SERVER_NETID, false, 0, 1);
 	return true;
 
 
@@ -249,7 +251,7 @@ bool cRemoteInterpreter::ReqRunVisualProgStream(visualprogram::ReqRunVisualProgS
 	{
 		// marshalling nodefile
 		// tricky code, packet buffer pointer change
-		network2::cPacket marsh(m_remoteDebugger.m_client.GetPacketHeader());
+		network2::cPacket marsh(network2::GetPacketHeader(network2::ePacketFormat::JSON));
 		marsh.m_data = (BYTE*)&m_nodeFileStream[0];
 		marsh.m_bufferSize = (int)m_nodeFileStream.size();
 		marsh.m_readIdx = 0; // no header data
@@ -262,13 +264,13 @@ bool cRemoteInterpreter::ReqRunVisualProgStream(visualprogram::ReqRunVisualProgS
 		WriteVisProgFile("simulation.vprog", nodeFile);
 
 		// generate intermediate code and write file
-		vprog::cVProgFile vprogFile;
+		vpl::cVplFile vplFile;
 		common::script::cIntermediateCode icode;
 
-		if (!vprogFile.Read("simulation.vprog"))
+		if (!vplFile.Read("simulation.vprog"))
 			goto $error;
 
-		vprogFile.GenerateIntermediateCode(icode);
+		vplFile.GenerateIntermediateCode(icode);
 		if (!icode.Write("simulation.icode"))
 			goto $error;
 
@@ -279,7 +281,7 @@ bool cRemoteInterpreter::ReqRunVisualProgStream(visualprogram::ReqRunVisualProgS
 		//	goto $error;
 
 		m_protocol.AckRunVisualProgStream(network2::SERVER_NETID, false, 1);
-		m_remoteDebugger.m_protocol.AckRun(network2::SERVER_NETID, false, 1);
+		m_remoteDebugger.m_protocol.AckRun(network2::SERVER_NETID, false, 0, 1);
 		return true;
 
 
@@ -293,26 +295,26 @@ bool cRemoteInterpreter::ReqRunVisualProgStream(visualprogram::ReqRunVisualProgS
 // stop visual program interpreter
 bool cRemoteInterpreter::ReqStopVisualProg(visualprogram::ReqStopVisualProg_Packet &packet)
 {
-	m_remoteDebugger.Stop();
+	m_remoteDebugger.Stop(0);
 	m_protocol.AckStopVisualProg(network2::SERVER_NETID, false, 1);
 	return true; 
 }
 
 
 // cInterpreter::iFunctionCallback overriding
-int cRemoteInterpreter::Function(script::cSymbolTable &symbolTable
+script::eCallbackState cRemoteInterpreter::Function(script::cVirtualMachine &vm
 	, const string &scopeName
 	, const string &funcName
 	, void *arg)
 {
 	if (funcName == "Console")
 	{
-		const string str = symbolTable.Get<string>(scopeName, "string");
+		const string str = vm.m_symbTable.Get<string>(scopeName, "string");
 		m_remoteDebugger.m_protocol.SyncVMOutput(network2::SERVER_NETID
-			, true, 0, str);
+			, true, 0, 0, str);
 	}
 
-	return 0;
+	return script::eCallbackState::Done;
 }
 
 

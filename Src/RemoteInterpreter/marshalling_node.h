@@ -11,7 +11,7 @@ namespace network2 {
 	{
 		inline ptree& get(ptree &props, OUT webvprog::sSymbol &rhs) 
 		{
-			rhs.stype = (vprog::eSymbolType::Enum)props.get<BYTE>("stype", 0);
+			rhs.stype = (script::eSymbolType::Enum)props.get<BYTE>("stype", 0);
 			rhs.name = props.get<string>("name", "name");
 			return props;
 		}
@@ -35,8 +35,8 @@ namespace network2 {
 		{
 			rhs.id = props.get<int>("id", 0);
 			rhs.name = props.get<string>("name", "name");
-			rhs.kind = (vprog::ePinKind::Enum)props.get<int>("kind", 0);
-			rhs.type = (vprog::ePinType::Enum)props.get<int>("type", 0);
+			rhs.kind = (vpl::ePinKind::Enum)props.get<int>("kind", 0);
+			rhs.type = (vpl::ePinType::Enum)props.get<int>("type", 0);
 			return props;
 		}
 
@@ -140,37 +140,37 @@ namespace network2 {
 
 			BYTE stype;
 			packet >> stype;
-			rhs.stype = (vprog::eSymbolType::Enum)stype;
+			rhs.stype = (script::eSymbolType::Enum)stype;
 			packet >> rhs.name;
 			packet.Read4ByteAlign(); // after string parsing
 
 			// parse variant value
 			bool b; int i; float f; string s;
 			switch (rhs.stype) {
-			case vprog::eSymbolType::Bool:
+			case script::eSymbolType::Bool:
 				packet >> b;
 				rhs.val = b;
 				break;
-			case vprog::eSymbolType::Int:
+			case script::eSymbolType::Int:
 				packet >> i;
 				rhs.val = i;
 				break;
-			case vprog::eSymbolType::Float:
+			case script::eSymbolType::Float:
 				packet >> f;
 				rhs.val = f;
 				break;
-			case vprog::eSymbolType::String:
+			case script::eSymbolType::String:
 				packet >> s;
 				rhs.val = (_bstr_t)s.c_str();
 				packet.Read4ByteAlign();
 				break;
-			case vprog::eSymbolType::Enums:
+			case script::eSymbolType::Enums:
 			{
 				MARSHALLING_BIN_GET_SEQ(packet, vector<string>, rhs.values);
 				packet.Read4ByteAlign();
 			}
 			break;
-			case vprog::eSymbolType::None:
+			case script::eSymbolType::None:
 			default: rhs.val.vt = VT_EMPTY; break;
 			}
 
@@ -190,9 +190,9 @@ namespace network2 {
 			packet >> rhs.id;
 			BYTE val;
 			packet >> val;
-			rhs.kind = (vprog::ePinKind::Enum)val;
+			rhs.kind = (vpl::ePinKind::Enum)val;
 			packet >> val;
-			rhs.type = (vprog::ePinType::Enum)val;
+			rhs.type = (vpl::ePinType::Enum)val;
 			packet >> rhs.name;
 			packet.Read4ByteAlign(); // after string parsing
 			return packet;
@@ -203,7 +203,7 @@ namespace network2 {
 			packet >> rhs.id;
 			BYTE nodeType;
 			packet >> nodeType;
-			rhs.nodeType = (vprog::eNodeType::Enum) nodeType;
+			rhs.nodeType = (vpl::eNodeType::Enum) nodeType;
 			packet >> rhs.name;
 			packet.Read4ByteAlign(); // after string parsing
 			packet >> rhs.desc;
@@ -212,7 +212,7 @@ namespace network2 {
 			MARSHALLING_BIN_GET_SEQ(packet, vector<webvprog::sSlot>, rhs.outputs);
 
 			// variable type? parse variable symbol name
-			if (rhs.nodeType == vprog::eNodeType::Variable)
+			if (rhs.nodeType == vpl::eNodeType::Variable)
 			{
 				// tricky code, variable node output is only one
 				if (rhs.outputs.size() > 0)
